@@ -2,6 +2,7 @@ package dev.arbjerg.ukulele.audio
 
 import com.sedmelluq.discord.lavaplayer.container.MediaContainerRegistry
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
+import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers.registerRemoteSources
 import dev.arbjerg.ukulele.config.BotProps
@@ -44,6 +45,8 @@ class LavaplayerConfig {
             MediaContainerRegistry.DEFAULT_REGISTRY,
             com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager::class.java
         )
+
+        AudioSourceManagers.registerLocalSource(apm)
 
         return apm
     }

@@ -5,8 +5,10 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo
 import dev.arbjerg.ukulele.audio.Player
 import dev.arbjerg.ukulele.audio.PlayerRegistry
+import dev.arbjerg.ukulele.audio.YtDlp
 import dev.arbjerg.ukulele.config.BotProps
 import dev.arbjerg.ukulele.features.HelpContext
 import dev.arbjerg.ukulele.jda.Command
@@ -18,7 +20,8 @@ import org.springframework.stereotype.Component
 class PlayCommand(
         val players: PlayerRegistry,
         val apm: AudioPlayerManager,
-        val botProps: BotProps
+        val botProps: BotProps,
+        val ytDlp: YtDlp
 ) : Command("play", "p") {
     override suspend fun CommandContext.invoke() {
         if (!ensureVoiceChannel()) return
@@ -28,13 +31,32 @@ class PlayCommand(
             identifier = "ytsearch:$identifier"
         }
 
+        val text = argumentText
         players.get(guild, guildProperties).lastChannel = channel
-        apm.loadItem(identifier, Loader(this, player, identifier))
+
+        val isValidUrl: Boolean = checkValidUrl(text)
+
+        if (!isValidUrl || ytDlp.isYoutubeUrl(text))
+        {
+            val target = if (isValidUrl) text else "ytsearch1:$text"
+            reply("Downloading…")
+            try {
+                val download = ytDlp.downloadFromYoutube(target)
+                apm.loadItem(download.file.toString(), Loader(this, player, text, download.title, download.url))
+            } catch (e: Exception) {
+                handleException(e)
+            }
+            return
+        }
+
+        apm.loadItem(text, Loader(this, player, text))
     }
 
     fun CommandContext.ensureVoiceChannel(): Boolean {
         val ourVc = guild.selfMember.voiceState?.channel
-        val theirVc = invoker.voiceState?.channel
+        val theirVc = invoker.voiceState?.channel ?: guild.voiceChannels.firstOrNull {
+            guild.selfMember.hasPermission(it, Permission.VOICE_CONNECT)
+        }
 
         if (ourVc == null && theirVc == null) {
             reply("You need to be in a voice channel")
@@ -64,9 +86,18 @@ class PlayCommand(
     inner class Loader(
             private val ctx: CommandContext,
             private val player: Player,
-            private val identifier: String
+            private val identifier: String,
+            private val title: String? = null,
+            private val url: String? = null
     ) : AudioLoadResultHandler {
         override fun trackLoaded(track: AudioTrack) {
+            // sneakily overwrite title and url if we pass one in >:}
+            if (title != null) {
+                AudioTrackInfo::class.java.getDeclaredField("title").apply { isAccessible = true }.set(track.info, title)
+            }
+            if (url != null) {
+                AudioTrackInfo::class.java.getDeclaredField("uri").apply { isAccessible = true }.set(track.info, url)
+            }
             if (track.isOverDurationLimit) {
                 ctx.reply("Refusing to play `${track.info.title}` because it is over ${botProps.trackDurationLimit} minutes long")
                 return

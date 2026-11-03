@@ -7,3 +7,6 @@ var AudioTrack.meta: TrackMeta
     set(data) { this.userData = data }
 
 class TrackMeta
+
+val AudioTrack.displayTitle: String
+    get() = (userData as? String) ?: info.title

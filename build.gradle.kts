@@ -17,21 +17,29 @@ java.sourceCompatibility = JavaVersion.VERSION_25
 extra["h2.version"] = "2.4.240"
 
 repositories {
+    mavenLocal()
     mavenCentral()
     flatDir {
         dirs("lib")
     }
+    maven {
+        url = uri("repo")
+    }
     maven { url = uri("https://maven.lavalink.dev/releases") }
+    maven { url = uri("https://maven.lavalink.dev/snapshots") }
 }
 
 dependencies {
+    implementation("dev.arbjerg:native-loader:0.0.1")
     implementation("net.dv8tion:JDA:6.4.1")
     implementation("club.minnced:jdave-api:0.1.8")
     runtimeOnly("club.minnced:jdave-native-linux-x86-64:0.1.8")
     runtimeOnly("club.minnced:jdave-native-linux-aarch64:0.1.8")
     runtimeOnly("club.minnced:jdave-native-darwin:0.1.8")
     runtimeOnly("club.minnced:jdave-native-win-x86-64:0.1.8")
-    implementation("dev.arbjerg:lavaplayer:2.2.6")
+    implementation("dev.arbjerg:lavaplayer:43da496dcd45489e0479802847207442f715e454-SNAPSHOT")
+    implementation("dev.arbjerg:lavadsp:0.7.8")
+    //implementation("dev.arbjerg:lavaplayer:2.2.7")
     implementation("dev.lavalink.youtube:v2:1.18.1")
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
 

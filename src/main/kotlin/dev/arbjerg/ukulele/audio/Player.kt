@@ -26,14 +26,19 @@ class Player(val beans: Beans, guildProperties: GuildProperties) : AudioEventAda
             val apm: AudioPlayerManager,
             val guildProperties: GuildPropertiesService,
             val nowPlayingCommand: NowPlayingCommand,
-            val botProps: BotProps
+            val botProps: BotProps,
+            val ytDlp: YtDlp
     )
+
+    var filterFactory = PCMFilterFactory()
 
     private val guildId = guildProperties.guildId
     private val queue = TrackQueue()
     private val player = beans.apm.createPlayer().apply {
         addListener(this@Player)
         volume = guildProperties.volume
+
+        setFilterFactory(filterFactory)
     }
     private val buffer = ByteBuffer.allocate(1024)
     private val frame: MutableAudioFrame = MutableAudioFrame().apply { setBuffer(buffer) }
@@ -92,7 +97,11 @@ class Player(val beans: Beans, guildProperties: GuildProperties) : AudioEventAda
         } else {
             newRange = newRange.first - 1 .. newRange.last - 1
         }
-        if (newRange.last >= 0) skipped.addAll(queue.removeRange(newRange))
+        if (newRange.last >= 0) {
+            val removed = queue.removeRange(newRange)
+            skipped.addAll(removed)
+            removed.forEach { deleteFileIfUnused(it) }
+        }
         if (skipped.first() == player.playingTrack) {
             if(isRepeating){
                 queue.add(player.playingTrack.makeClone())
@@ -115,8 +124,17 @@ class Player(val beans: Beans, guildProperties: GuildProperties) : AudioEventAda
     }
 
     fun stop() {
+        val dropped = queue.tracks.toList()
         queue.clear()
+        dropped.forEach { deleteFileIfUnused(it) }
         player.stopTrack()
+    }
+
+    private fun deleteFileIfUnused(track: AudioTrack) {
+        val id = track.info.identifier
+        val playing = player.playingTrack
+        val stillNeeded = queue.tracks.any { it.info.identifier == id } || (playing != null && playing !== track && playing.info.identifier == id)
+        if (!stillNeeded) beans.ytDlp.deleteIfDownloaded(track)
     }
 
     fun seek(position: Long) {
@@ -133,6 +151,7 @@ class Player(val beans: Beans, guildProperties: GuildProperties) : AudioEventAda
         if (isRepeating && endReason.mayStartNext) {
             queue.add(track.makeClone())
         }
+        deleteFileIfUnused(track)
         val new = queue.take() ?: return
         player.playTrack(new)
     }

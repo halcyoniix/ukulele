@@ -60,6 +60,7 @@ class NowPlayingCommand : Command ("nowplaying", "np") {
 
         fun default(): MessageEmbed {
             message.setTitle(track.info.title)  // Show just the title of the radio station. Weird uri jank.
+            message.setUrl(track.info.uri)
             message.setColor(DEFAULT_GREY)
             message.addField("Time", timeField, true)
             return message.build()

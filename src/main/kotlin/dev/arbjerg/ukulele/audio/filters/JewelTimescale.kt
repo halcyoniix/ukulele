@@ -7,6 +7,7 @@ import com.github.natanbc.lavadsp.util.DoubleToDoubleFunction
 import com.sedmelluq.discord.lavaplayer.filter.FloatPcmAudioFilter
 import kotlin.concurrent.Volatile
 import kotlin.math.exp
+import kotlin.math.ln
 import kotlin.math.max
 import kotlin.math.min
 
@@ -73,6 +74,16 @@ class JewelTimescalePcmAudioFilter(private val downstream: FloatPcmAudioFilter, 
 
     fun setPitchSemiTones(pitch: Double): JewelTimescalePcmAudioFilter {
         return this.setPitchOctaves(pitch / 12.0)
+    }
+
+    fun getPitchFromSemitones(semitones: Double): Double
+    {
+        return exp(0.69314718056 * (semitones / 12.0));
+    }
+
+    fun getSemitonesFromPitch(pitch: Double): Double
+    {
+        return 12.0 * (ln(pitch) / 0.69314718056)
     }
 
     fun setRate(rate: Double): JewelTimescalePcmAudioFilter {

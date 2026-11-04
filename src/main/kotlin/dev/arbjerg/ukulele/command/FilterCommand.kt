@@ -1,5 +1,6 @@
 package dev.arbjerg.ukulele.command
 
+import dev.arbjerg.ukulele.audio.SmoothedParam
 import dev.arbjerg.ukulele.features.HelpContext
 import dev.arbjerg.ukulele.jda.Command
 import dev.arbjerg.ukulele.jda.CommandContext
@@ -19,6 +20,18 @@ class FilterCommand : Command ("filter", "f") {
 
         var replyText = "";
 
+        var lerpTime: Float = 0.0f
+
+        fun setSingleParameter(param: SmoothedParam, paramName: String, value: Double) {
+            if (lerpTime == 0.0f) {
+                param.set(value)
+                replyText += "Set $paramName to $value\n"
+            } else {
+                replyText += "Started a lerp of $paramName from ${param.get()} to $value over $lerpTime seconds\n"
+                param.rampTo(value, lerpTime)
+            }
+        }
+
         while (matcher.find()) {
             when {
                 matcher.group(1) != null -> {
@@ -26,50 +39,71 @@ class FilterCommand : Command ("filter", "f") {
                     val value = matcher.group(2).toDouble()
                     when (name) {
                         "s", "speed" -> {
-                            player.filterFactory.speed = value
-                            replyText += "Set speed to $value\n"
+                            setSingleParameter(player.filterFactory.timescaleSpeedParam, "Speed", value)
                         }
                         "p", "pitch" -> {
-                            player.filterFactory.pitch = value
-                            replyText += "Set pitch to $value\n"
+                            setSingleParameter(player.filterFactory.timescalePitchParam, "Pitch", value)
                         }
                         "bb", "bassboost" -> {
-                        	player.filterFactory.bassBoost = value.toFloat()
-                         	replyText += "Set bass boost to $value\n"
+                            setSingleParameter(player.filterFactory.bassBoostParam, "bass boost", value)
                         }
                         "c", "clip" -> {
-                            player.filterFactory.clipperThreshold = value.toFloat()
-                            replyText += "Set clipper to $value\n"
+                            setSingleParameter(player.filterFactory.clipperThresholdParam, "clipper threshold", value)
+                        }
+                        "l", "lerp" -> {
+                            lerpTime = value.toFloat()
                         }
                     }
                 }
                 matcher.group(3) != null -> {
-                    val freq = matcher.group(4).toFloat()
-                    val depth = matcher.group(5).toFloat()
+                    val freq = matcher.group(4).toDouble()
+                    val depth = matcher.group(5).toDouble()
 
 					val name = matcher.group(3)
 					when (name) {
 						"t", "tremolo" -> {
-		                    player.filterFactory.tremoloFrequency = freq
-		                    player.filterFactory.tremoloDepth = depth.coerceAtLeast(0.0f)
+                            if (lerpTime == 0.0f) {
+                                player.filterFactory.tremoloFrequencyParam.set(freq)
+                                player.filterFactory.tremoloDepthParam.set(depth)
 
-		                    if (depth == 0.0f || freq == 0.0f) {
-		                        replyText += "Disabled tremolo\n"
-		                    }
-		                    else {
-		                        replyText += "Set tremolo freq/depth to $freq/$depth\n"
-		                    }
+                                val setFreq = player.filterFactory.tremoloFrequencyParam.get();
+                                val setDepth = player.filterFactory.tremoloDepthParam.get();
+
+                                if (setFreq == 0.0 || setDepth == 0.0)
+                                {
+                                    replyText += "Disabled tremolo\n"
+                                }
+                                else
+                                {
+                                    replyText += "Set tremolo freq/depth to ${setFreq}/${setDepth}\n"
+                                }
+                            } else {
+                                replyText += "Started a lerp of tremolo freq/depth from ${player.filterFactory.tremoloFrequencyParam.get()}/${player.filterFactory.tremoloDepthParam.get()} to $freq/$depth over $lerpTime seconds\n"
+                                player.filterFactory.tremoloFrequencyParam.rampTo(freq, lerpTime)
+                                player.filterFactory.tremoloDepthParam.rampTo(depth, lerpTime)
+                            }
 						}
 						"v", "vibrato" -> {
-						   player.filterFactory.vibratoFrequency = freq
-					       player.filterFactory.vibratoDepth = depth.coerceAtLeast(0.0f)
+                            if (lerpTime == 0.0f) {
+                                player.filterFactory.vibratoFrequencyParam.set(freq)
+                                player.filterFactory.vibratoDepthParam.set(depth)
 
-					       if (depth == 0.0f || freq == 0.0f) {
-					           replyText += "Disabled vibrato\n"
-					       }
-					       else {
-					           replyText += "Set vibrato freq/depth to $freq/$depth\n"
-					       }
+                                val setFreq = player.filterFactory.vibratoFrequencyParam.get();
+                                val setDepth = player.filterFactory.vibratoDepthParam.get();
+
+                                if (setFreq == 0.0 || setDepth == 0.0)
+                                {
+                                    replyText += "Disabled vibrato\n"
+                                }
+                                else
+                                {
+                                    replyText += "Set vibrato freq/depth to ${setFreq}/${setDepth}\n"
+                                }
+                            } else {
+                                replyText += "Started a lerp of vibrato freq/depth from ${player.filterFactory.vibratoFrequencyParam.get()}/${player.filterFactory.vibratoDepthParam.get()} to $freq/$depth over $lerpTime seconds\n"
+                                player.filterFactory.vibratoFrequencyParam.rampTo(freq, lerpTime)
+                                player.filterFactory.vibratoDepthParam.rampTo(depth, lerpTime)
+                            }
 						}
 					}
 
@@ -79,26 +113,26 @@ class FilterCommand : Command ("filter", "f") {
 
                     when (name) {
                         "r", "reset" -> {
-                            player.filterFactory.speed = 1.0
-                            player.filterFactory.pitch = 0.0
-                            player.filterFactory.tremoloFrequency = 0.0f
-                            player.filterFactory.tremoloDepth = 0.0f
-                            player.filterFactory.vibratoFrequency = 0.0f
-                            player.filterFactory.vibratoDepth = 0.0f
-                            player.filterFactory.bassBoost = 0.0f
-                            player.filterFactory.clipperThreshold = 1.0f
+                            player.filterFactory.timescaleSpeedParam.set(1.0)
+                            player.filterFactory.timescalePitchParam.set(0.0)
+                            player.filterFactory.tremoloFrequencyParam.set(0.0)
+                            player.filterFactory.tremoloDepthParam.set(0.0)
+                            player.filterFactory.vibratoFrequencyParam.set(0.0)
+                            player.filterFactory.vibratoDepthParam.set(0.0)
+                            player.filterFactory.bassBoostParam.set(0.0)
+                            player.filterFactory.clipperThresholdParam.set(1.0)
 
                             replyText += "Reset filters\n"
                         }
                         "l", "list" ->
                         {
                             replyText += "Current filters:\n"
-                            replyText += "\ts/speed ${player.filterFactory.speed}\n"
-                            replyText += "\tp/pitch ${player.filterFactory.pitch}\n"
-                            replyText += "\tt/tremolo ${player.filterFactory.tremoloFrequency} ${player.filterFactory.tremoloDepth}\n"
-                            replyText += "\tv/vibrato ${player.filterFactory.vibratoFrequency} ${player.filterFactory.vibratoDepth}\n"
-                            replyText += "\tbb/bassboost ${player.filterFactory.bassBoost}\n"
-                            replyText += "\tc/clip ${player.filterFactory.clipperThreshold}\n"
+                            replyText += "\tspeed ${player.filterFactory.timescaleSpeedParam.get()}\n"
+                            replyText += "\tpitch ${player.filterFactory.timescalePitchParam.get()}\n"
+                            replyText += "\ttremolo ${player.filterFactory.tremoloFrequencyParam.get()} ${player.filterFactory.tremoloDepthParam.get()}\n"
+                            replyText += "\tvibrato ${player.filterFactory.vibratoFrequencyParam.get()} ${player.filterFactory.vibratoDepthParam.get()}\n"
+                            replyText += "\tbassboost ${player.filterFactory.bassBoostParam.get()}\n"
+                            replyText += "\tclip ${player.filterFactory.clipperThresholdParam.get()}\n"
                         }
                     }
                 }
@@ -116,7 +150,7 @@ class FilterCommand : Command ("filter", "f") {
     }
 
     // private val matchPattern: Pattern = Pattern.compile("(s|p|speed|pitch)\\s+([\\d.]+)|trem\\s+([\\d.]+)\\s+([\\d.]+)|(r|reset)")
-    private val matchPattern: Pattern = Pattern.compile("(s|p|speed|pitch|bb|bassboost|c|clip)\\s+([\\d.-]+)|(t|tremolo|v|vibrato)\\s+([\\d.-]+)\\s+([\\d.-]+)|(r|reset|l|list)")
+    private val matchPattern: Pattern = Pattern.compile("(s|p|speed|pitch|bb|bassboost|c|clip|l|lerp)\\s+([\\d.-]+)|(t|tremolo|v|vibrato)\\s+([\\d.-]+)\\s+([\\d.-]+)|(r|reset|list)")
     //\ns/speed X.XX\np/pitch X.XX\nt/tremolo X.XX (freq) X.XX (depth 0-1)\nbb/bassboost X.XX\nr/reset"
 	override fun HelpContext.provideHelp() {
 		addUsage("[filter]")
@@ -127,10 +161,12 @@ class FilterCommand : Command ("filter", "f") {
 		addUsages("vibrato", "v <freq> <depth>")
 		addUsages("bassboost", "bb <amount>")
 		addUsages("clip", "c <amount>")
-		addUsages("list", "l")
+        addUsages("lerp", "l")
+		addUsages("list")
 		addUsages("reset", "r")
 		addDescription("Filters can be chained in any order separated by whitespace")
 		addUsage("speed 0.5 pitch 3 vibrato 0.25 20")
+        addUsage("speed 0.5 lerp 10 pitch 3 vibrato 0.25 20 // lerps only the values after the lerp")
 
     	// var asdf = ""
      // 	asdf += "\ns/speed X.XX"

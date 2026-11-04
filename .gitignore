@@ -3,7 +3,6 @@
 HELP.md
 .gradle
 build/
-repo/
 .kotlin/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/

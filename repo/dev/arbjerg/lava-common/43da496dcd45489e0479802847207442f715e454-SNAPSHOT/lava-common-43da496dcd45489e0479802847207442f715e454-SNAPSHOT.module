@@ -1,0 +1,96 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "dev.arbjerg",
+    "module": "lava-common",
+    "version": "43da496dcd45489e0479802847207442f715e454-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.14.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "lava-common-43da496dcd45489e0479802847207442f715e454-SNAPSHOT.jar",
+          "url": "lava-common-43da496dcd45489e0479802847207442f715e454-SNAPSHOT.jar",
+          "size": 26082,
+          "sha512": "729a469fee12f51557811ffeb62e73d937a94c497eda0d39f76c105aad4e597874c4adf71b8f4f8fc683b1d0db055be7541aa4147f638475f22a1f42cf89e7fe",
+          "sha256": "d598574f1d7af10cc02c46fa341c54ae56ad9b2e351c8d305597155924f83249",
+          "sha1": "10b6032374e22861f71509133e7c31e70c2334f7",
+          "md5": "efd71a6cd5cc30969570c04925243e81"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.slf4j",
+          "module": "slf4j-api",
+          "version": {
+            "requires": "2.0.7"
+          }
+        },
+        {
+          "group": "commons-io",
+          "module": "commons-io",
+          "version": {
+            "requires": "2.13.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "lava-common-43da496dcd45489e0479802847207442f715e454-SNAPSHOT.jar",
+          "url": "lava-common-43da496dcd45489e0479802847207442f715e454-SNAPSHOT.jar",
+          "size": 26082,
+          "sha512": "729a469fee12f51557811ffeb62e73d937a94c497eda0d39f76c105aad4e597874c4adf71b8f4f8fc683b1d0db055be7541aa4147f638475f22a1f42cf89e7fe",
+          "sha256": "d598574f1d7af10cc02c46fa341c54ae56ad9b2e351c8d305597155924f83249",
+          "sha1": "10b6032374e22861f71509133e7c31e70c2334f7",
+          "md5": "efd71a6cd5cc30969570c04925243e81"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "lava-common-43da496dcd45489e0479802847207442f715e454-SNAPSHOT-sources.jar",
+          "url": "lava-common-43da496dcd45489e0479802847207442f715e454-SNAPSHOT-sources.jar",
+          "size": 13290,
+          "sha512": "5be129382dd67cfc5fc494803705085e25086392adc90a7584e1dc6a834eb1b041341f03b300ad6c2401f88544e13635ae2de3b8c7ee0059130f35b12a090ba9",
+          "sha256": "f456aa6f2d7a0e0dfd27cf387ed6ea763d15daa9831644cf73d478e83c94a830",
+          "sha1": "39f4aed58aee62d2b6e0282f4f71f96649157a74",
+          "md5": "3a5cb01a4dafa32f70635cc9aa423adf"
+        }
+      ]
+    }
+  ]
+}

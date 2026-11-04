@@ -1,0 +1,80 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "dev.arbjerg",
+    "module": "lavaplayer-natives",
+    "version": "43da496dcd45489e0479802847207442f715e454-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.14.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "lavaplayer-natives-43da496dcd45489e0479802847207442f715e454-SNAPSHOT.jar",
+          "url": "lavaplayer-natives-43da496dcd45489e0479802847207442f715e454-SNAPSHOT.jar",
+          "size": 27112500,
+          "sha512": "ed33d49fec471426268230bc3415225e46005eeca11d601436225ed987547bca92cd00bee858060cf4b708353827b85c4355cdd62d008217a9b3ce20d1bcdbcc",
+          "sha256": "d340543c7277222dc57afda44be2b3adc9ccc548b83fd70b1a67d46bf6a6bf68",
+          "sha1": "003dd545e4eb0cef07758df832b50fdf58b607d4",
+          "md5": "568286678ab85e16e2e8545c5d761102"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "lavaplayer-natives-43da496dcd45489e0479802847207442f715e454-SNAPSHOT.jar",
+          "url": "lavaplayer-natives-43da496dcd45489e0479802847207442f715e454-SNAPSHOT.jar",
+          "size": 27112500,
+          "sha512": "ed33d49fec471426268230bc3415225e46005eeca11d601436225ed987547bca92cd00bee858060cf4b708353827b85c4355cdd62d008217a9b3ce20d1bcdbcc",
+          "sha256": "d340543c7277222dc57afda44be2b3adc9ccc548b83fd70b1a67d46bf6a6bf68",
+          "sha1": "003dd545e4eb0cef07758df832b50fdf58b607d4",
+          "md5": "568286678ab85e16e2e8545c5d761102"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "lavaplayer-natives-43da496dcd45489e0479802847207442f715e454-SNAPSHOT-sources.jar",
+          "url": "lavaplayer-natives-43da496dcd45489e0479802847207442f715e454-SNAPSHOT-sources.jar",
+          "size": 27112500,
+          "sha512": "562e2d5fd6f2f1d0a15ee4b5ec328930e385572dfe77f82df8833dc5752a1e86faf35cd657e7ab5dfaffa59f35afb4f8ee3d9347038da8ce87760e81f77e265b",
+          "sha256": "43ca8e580b572daeea7b5247231fffe612ef7d86074f4e762812fd8b305ba91b",
+          "sha1": "1b8f93598d9eea35d34a379703ce182cb824a6ee",
+          "md5": "6aab10c29fee58ce55142fcb90379854"
+        }
+      ]
+    }
+  ]
+}

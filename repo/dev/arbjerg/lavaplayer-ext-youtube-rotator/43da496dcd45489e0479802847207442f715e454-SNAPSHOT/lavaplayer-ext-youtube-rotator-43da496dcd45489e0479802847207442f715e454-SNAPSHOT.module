@@ -1,0 +1,89 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "dev.arbjerg",
+    "module": "lavaplayer-ext-youtube-rotator",
+    "version": "43da496dcd45489e0479802847207442f715e454-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.14.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "lavaplayer-ext-youtube-rotator-43da496dcd45489e0479802847207442f715e454-SNAPSHOT.jar",
+          "url": "lavaplayer-ext-youtube-rotator-43da496dcd45489e0479802847207442f715e454-SNAPSHOT.jar",
+          "size": 36387,
+          "sha512": "1526b1431a524c3e94167ea67ea4e599c76cb9cebf386c7266f4c1fa1750dfdce5e6a328dc0d980fae727285b0a453446d1380a8bd93de24b9e1c8ba86b333d3",
+          "sha256": "ee67c03d8718ae5d83033dfadc4458f6a535661024fe6e1142d3763fa7175cd6",
+          "sha1": "fd2896abd7c9866b47dbc00f04835e6b870c9b18",
+          "md5": "76254f9a9ceecd2b89db70428eca03ef"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.slf4j",
+          "module": "slf4j-api",
+          "version": {
+            "requires": "2.0.7"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "lavaplayer-ext-youtube-rotator-43da496dcd45489e0479802847207442f715e454-SNAPSHOT.jar",
+          "url": "lavaplayer-ext-youtube-rotator-43da496dcd45489e0479802847207442f715e454-SNAPSHOT.jar",
+          "size": 36387,
+          "sha512": "1526b1431a524c3e94167ea67ea4e599c76cb9cebf386c7266f4c1fa1750dfdce5e6a328dc0d980fae727285b0a453446d1380a8bd93de24b9e1c8ba86b333d3",
+          "sha256": "ee67c03d8718ae5d83033dfadc4458f6a535661024fe6e1142d3763fa7175cd6",
+          "sha1": "fd2896abd7c9866b47dbc00f04835e6b870c9b18",
+          "md5": "76254f9a9ceecd2b89db70428eca03ef"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "lavaplayer-ext-youtube-rotator-43da496dcd45489e0479802847207442f715e454-SNAPSHOT-sources.jar",
+          "url": "lavaplayer-ext-youtube-rotator-43da496dcd45489e0479802847207442f715e454-SNAPSHOT-sources.jar",
+          "size": 19830,
+          "sha512": "9b3839d5cb415c39f9b6ef53791561dc63681b13d4d03c29a2179e36e089325f5030bd0bf734866ddf776e2cccc60e7943805d996faf741a5f14f8261dc17cc7",
+          "sha256": "33fc66d6572799e82bc683cb6997d4246e814e71bed5345e6d55c197aca57f10",
+          "sha1": "5fe3ac77cc8d03a85c2a5e8d43f036127d896796",
+          "md5": "02b811529a3bba330bb0826569934207"
+        }
+      ]
+    }
+  ]
+}

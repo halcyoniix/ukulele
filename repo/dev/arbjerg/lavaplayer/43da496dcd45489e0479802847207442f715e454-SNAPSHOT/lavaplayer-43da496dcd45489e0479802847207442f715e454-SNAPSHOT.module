@@ -1,0 +1,196 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "dev.arbjerg",
+    "module": "lavaplayer",
+    "version": "43da496dcd45489e0479802847207442f715e454-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.14.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "dev.arbjerg",
+          "module": "lava-common",
+          "version": {
+            "requires": "43da496dcd45489e0479802847207442f715e454-SNAPSHOT"
+          }
+        },
+        {
+          "group": "org.apache.httpcomponents",
+          "module": "httpclient",
+          "version": {
+            "requires": "4.5.14"
+          }
+        },
+        {
+          "group": "com.fasterxml.jackson.core",
+          "module": "jackson-core",
+          "version": {
+            "requires": "2.15.2"
+          }
+        },
+        {
+          "group": "com.fasterxml.jackson.core",
+          "module": "jackson-databind",
+          "version": {
+            "requires": "2.15.2"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "lavaplayer-43da496dcd45489e0479802847207442f715e454-SNAPSHOT.jar",
+          "url": "lavaplayer-43da496dcd45489e0479802847207442f715e454-SNAPSHOT.jar",
+          "size": 738347,
+          "sha512": "164e8b5790746b860950853c28ea67eaa045cad0aeff0c49d10de5e827d2622635ef5796d7309ba5fb1ebb80ad8f0fd07801197bf4e4e5d4efd9b35596b0fa46",
+          "sha256": "b8b6a4231d8ce2bb4c1c18a2b280aae5d0e0ff8ef7cf7ccced2718ce11437cb9",
+          "sha1": "26604acfe2bdcc38d1733e979461ad3528457a02",
+          "md5": "3ecf7df8187b9c18999a6b4c36985455"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "dev.arbjerg",
+          "module": "lavaplayer-natives",
+          "version": {
+            "requires": "43da496dcd45489e0479802847207442f715e454-SNAPSHOT"
+          }
+        },
+        {
+          "group": "org.mozilla",
+          "module": "rhino-engine",
+          "version": {
+            "requires": "1.7.14.1"
+          }
+        },
+        {
+          "group": "org.slf4j",
+          "module": "slf4j-api",
+          "version": {
+            "requires": "2.0.7"
+          }
+        },
+        {
+          "group": "commons-io",
+          "module": "commons-io",
+          "version": {
+            "requires": "2.13.0"
+          }
+        },
+        {
+          "group": "org.jsoup",
+          "module": "jsoup",
+          "version": {
+            "requires": "1.16.1"
+          }
+        },
+        {
+          "group": "net.iharder",
+          "module": "base64",
+          "version": {
+            "requires": "2.3.9"
+          }
+        },
+        {
+          "group": "org.json",
+          "module": "json",
+          "version": {
+            "requires": "20240303"
+          }
+        },
+        {
+          "group": "org.jetbrains",
+          "module": "annotations",
+          "version": {
+            "requires": "24.0.0"
+          }
+        },
+        {
+          "group": "dev.arbjerg",
+          "module": "lava-common",
+          "version": {
+            "requires": "43da496dcd45489e0479802847207442f715e454-SNAPSHOT"
+          }
+        },
+        {
+          "group": "org.apache.httpcomponents",
+          "module": "httpclient",
+          "version": {
+            "requires": "4.5.14"
+          }
+        },
+        {
+          "group": "com.fasterxml.jackson.core",
+          "module": "jackson-core",
+          "version": {
+            "requires": "2.15.2"
+          }
+        },
+        {
+          "group": "com.fasterxml.jackson.core",
+          "module": "jackson-databind",
+          "version": {
+            "requires": "2.15.2"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "lavaplayer-43da496dcd45489e0479802847207442f715e454-SNAPSHOT.jar",
+          "url": "lavaplayer-43da496dcd45489e0479802847207442f715e454-SNAPSHOT.jar",
+          "size": 738347,
+          "sha512": "164e8b5790746b860950853c28ea67eaa045cad0aeff0c49d10de5e827d2622635ef5796d7309ba5fb1ebb80ad8f0fd07801197bf4e4e5d4efd9b35596b0fa46",
+          "sha256": "b8b6a4231d8ce2bb4c1c18a2b280aae5d0e0ff8ef7cf7ccced2718ce11437cb9",
+          "sha1": "26604acfe2bdcc38d1733e979461ad3528457a02",
+          "md5": "3ecf7df8187b9c18999a6b4c36985455"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "lavaplayer-43da496dcd45489e0479802847207442f715e454-SNAPSHOT-sources.jar",
+          "url": "lavaplayer-43da496dcd45489e0479802847207442f715e454-SNAPSHOT-sources.jar",
+          "size": 428944,
+          "sha512": "4bf44949b33b5b60c1d54691946d22d8cb07a4e1ae4367bab6adabd85431aa1402afd64e02d49e67fa4eac986350e2c56e3e16c265d14bdf070b94ecd5e60cd5",
+          "sha256": "d4cb4460e62072e7001b09bfa20ce3a386bf97e2c16122ab1419cfdf940338f7",
+          "sha1": "7a9f7ea1eeadc91952c2a806a015c44650987a95",
+          "md5": "4618fecf86f6b57c1bcdc92545c9a321"
+        }
+      ]
+    }
+  ]
+}

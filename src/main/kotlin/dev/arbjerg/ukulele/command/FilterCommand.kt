@@ -229,7 +229,7 @@ class FilterCommand : Command ("filter", "f") {
         addUsages("reverb", "rev <size> <strength>")
         addUsages("reverbLines <numLines>")
 		addUsages("bassboost", "bb <amount>")
-		addUsages("rotation", "rot <hz>")
+		addUsages("rotation", "rot <hz> <depth>")
 		addUsages("clip", "c <amount>")
         addUsages("lerp", "l")
 		addUsages("list")

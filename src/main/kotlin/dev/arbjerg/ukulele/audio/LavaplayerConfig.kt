@@ -34,6 +34,7 @@ class LavaplayerConfig {
         )
 
         val apm = DefaultAudioPlayerManager()
+        apm.frameBufferDuration = 250
 
         // Add the new YoutubeAudioSourceManager
         apm.registerSourceManager(ytSourceManager)

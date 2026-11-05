@@ -23,13 +23,13 @@ class JewelVibratoConverter(sampleRate: Int) : Converter {
     }
 
     fun setDepth(depth: Float) {
-        require(!(depth <= 0)) { "Depth <= 0" }
-        this.depth = depth
+        val newDepth = depth.coerceAtLeast(0.0f)
+        this.depth = newDepth
     }
 
     fun setFrequency(frequency: Float) {
-        require(!(frequency <= 0)) { "Frequency <= 0" }
-        lfo.frequency = frequency
+        val newFrequency = frequency.coerceAtLeast(0.0f)
+        lfo.frequency = newFrequency
     }
 
     override fun process(input: FloatArray, inputOffset: Int, output: FloatArray, outputOffset: Int, samples: Int) {

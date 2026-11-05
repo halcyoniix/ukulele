@@ -1,6 +1,5 @@
 package dev.arbjerg.ukulele.audio
 
-import com.github.natanbc.lavadsp.tremolo.TremoloPcmAudioFilter
 import com.github.natanbc.lavadsp.ConverterPcmAudioFilter
 import com.github.natanbc.lavadsp.util.FloatToFloatFunction
 import com.sedmelluq.discord.lavaplayer.filter.AudioFilter
@@ -14,12 +13,15 @@ import dev.arbjerg.ukulele.audio.filters.JewelEqualizer
 import dev.arbjerg.ukulele.audio.filters.JewelVibratoPcmAudioFilter
 import dev.arbjerg.ukulele.audio.filters.JewelClipperPcmAudioFilter
 import dev.arbjerg.ukulele.audio.filters.JewelTimescalePcmAudioFilter
+import dev.arbjerg.ukulele.audio.filters.JewelTremoloPcmAudioFilter
 import dev.arbjerg.ukulele.audio.filters.ScropRotationPcmAudioFilter
+import dev.arbjerg.ukulele.audio.filters.echoreverb.EchoPcmAudioFilter
+import dev.arbjerg.ukulele.audio.filters.echoreverb.ReverberationPcmAudioFilter
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.abs
 import kotlin.math.sign
 
-class SmoothedParam(private val getCallback: () -> Double, private val setCallback: (Double) -> Unit) {
+class SmoothedParam(private val filterFactory: PCMFilterFactory, private val getCallback: () -> Double, private val setCallback: (Double) -> Unit) {
     private class Ramp(val target: Double, val seconds: Float)
 
     private val pending = AtomicReference<Ramp?>(null)
@@ -27,8 +29,16 @@ class SmoothedParam(private val getCallback: () -> Double, private val setCallba
     private var perSecond = 0f
 
     fun rampTo(target: Double, seconds: Float) = pending.set(Ramp(target, seconds))
-    fun set(target: Double) = rampTo(target, 0f)
+    fun set(target: Double) =
+        {
+            rampTo(target, 0f)
+            step(0.01f)
+        }
     fun get() = getCallback()
+
+    init {
+        filterFactory.smoothedParams += this
+    }
 
     internal fun step(dt: Float) {
         pending.getAndSet(null)?.let { r ->
@@ -50,153 +60,120 @@ class SmoothedParam(private val getCallback: () -> Double, private val setCallba
     }
 }
 
-class SmoothingFilterWrapper<T : FloatPcmAudioFilter>(
-    val inner: T,
+class BypassFilter<T : FloatPcmAudioFilter>(
+    val effect: T,
+    private val downstream: FloatPcmAudioFilter,
+    private val shouldBypass: (T) -> Boolean
+) : FloatPcmAudioFilter {
+    val isBypassed: Boolean get() = shouldBypass(effect)
+
+    override fun process(input: Array<FloatArray?>, offset: Int, length: Int) {
+        if (shouldBypass(effect)) downstream.process(input, offset, length)
+        else effect.process(input, offset, length)
+    }
+
+    override fun seekPerformed(requestedTime: Long, providedTime: Long) = effect.seekPerformed(requestedTime, providedTime)
+    override fun flush() = effect.flush()
+    override fun close() = effect.close()
+}
+
+class ParamStepper(
+    private val downstream: FloatPcmAudioFilter,
     private val sampleRate: Int,
-    private val params: List<SmoothedParam>
+    private val filterFactory: PCMFilterFactory
 ) : FloatPcmAudioFilter {
     override fun process(input: Array<FloatArray?>, offset: Int, length: Int) {
         val dt = length.toFloat() / sampleRate
-        for (p in params)
-        {
-            p.step(dt)
-        }
-        inner.process(input, offset, length)
+        filterFactory.step(dt)
+        downstream.process(input, offset, length)
     }
 
-    override fun seekPerformed(requestedTime: Long, providedTime: Long) = inner.seekPerformed(requestedTime, providedTime)
-    override fun flush() = inner.flush()
-    override fun close() = inner.close()
-}
-
-// stupid hack for a tremolo filter that supports 0 (bypass)
-class BypassableTremoloPcmAudioFilter(
-    private val downstream: FloatPcmAudioFilter,
-    channelCount: Int,
-    sampleRate: Int
-) : FloatPcmAudioFilter {
-    private val tremolo = TremoloPcmAudioFilter(downstream, channelCount, sampleRate)
-    private var desiredTremoloFrequency = 0.0f
-    private var desiredTremoloDepth = 0.0f
-
-    fun setFrequency(frequency: Float) = apply {
-        desiredTremoloFrequency = frequency
-        if (desiredTremoloFrequency > 0.0f) {
-            tremolo.frequency = frequency
-        }
-    }
-    fun getFrequency() = desiredTremoloFrequency
-    fun setDepth(depth: Float) = apply {
-        desiredTremoloDepth = depth
-        if (desiredTremoloDepth > 0.0f) {
-            tremolo.depth = depth
-        }
-    }
-    fun getDepth() = desiredTremoloDepth
-
-    override fun process(input: Array<FloatArray?>, offset: Int, length: Int) {
-        if (desiredTremoloDepth <= 0f || desiredTremoloFrequency <= 0f) {
-            this.downstream.process(input, offset, length)
-        } else {
-            tremolo.process(input, offset, length)
-        }
-    }
-
-    override fun seekPerformed(requestedTime: Long, providedTime: Long) = tremolo.seekPerformed(requestedTime, providedTime)
-    override fun flush() = tremolo.flush()
-    override fun close() = tremolo.close()
-}
-
-class BypassableVibratoPcmAudioFilter(
-    private val downstream: FloatPcmAudioFilter,
-    channelCount: Int,
-    sampleRate: Int
-) : FloatPcmAudioFilter {
-    private val tremolo = JewelVibratoPcmAudioFilter(downstream, channelCount, sampleRate)
-    private var desiredTremoloFrequency = 0.0f
-    private var desiredTremoloDepth = 0.0f
-
-    fun setFrequency(frequency: Float) = apply {
-        desiredTremoloFrequency = frequency
-        if (desiredTremoloFrequency > 0.0f) {
-            tremolo.frequency = frequency
-        }
-    }
-    fun getFrequency() = desiredTremoloFrequency
-    fun setDepth(depth: Float) = apply {
-        desiredTremoloDepth = depth
-        if (desiredTremoloDepth > 0.0f) {
-            tremolo.depth = depth
-        }
-    }
-    fun getDepth() = desiredTremoloDepth
-
-    override fun process(input: Array<FloatArray?>, offset: Int, length: Int) {
-        if (desiredTremoloDepth <= 0f || desiredTremoloFrequency <= 0f) {
-            this.downstream.process(input, offset, length)
-        } else {
-            tremolo.process(input, offset, length)
-        }
-    }
-
-    override fun seekPerformed(requestedTime: Long, providedTime: Long) = tremolo.seekPerformed(requestedTime, providedTime)
-    override fun flush() = tremolo.flush()
-    override fun close() = tremolo.close()
+    override fun seekPerformed(requestedTime: Long, providedTime: Long) = downstream.seekPerformed(requestedTime, providedTime)
+    override fun flush() = downstream.flush()
+    override fun close() = downstream.close()
 }
 
 class PCMFilterFactory : PcmFilterFactory {
-    private var timescale: SmoothingFilterWrapper<JewelTimescalePcmAudioFilter>? = null
-    private var tremolo: SmoothingFilterWrapper<BypassableTremoloPcmAudioFilter>? = null
-    private var vibrato: SmoothingFilterWrapper<BypassableVibratoPcmAudioFilter>? = null
-    private var eq: SmoothingFilterWrapper<JewelEqualizer>? = null
-    private var clipper: SmoothingFilterWrapper<JewelClipperPcmAudioFilter>? = null
-    private var rotation: SmoothingFilterWrapper<ScropRotationPcmAudioFilter>? = null
+    var smoothedParams: List<SmoothedParam> = emptyList()
 
-    val timescaleSpeedParam = SmoothedParam({ timescale?.inner!!.speed }, { timescale?.inner!!.setSpeed(it.coerceAtLeast(0.001)) })
-    val timescalePitchParam = SmoothedParam({ timescale?.inner!!.getSemitonesFromPitch(timescale?.inner!!.pitch) }, { timescale?.inner!!.setPitchSemiTones(it) })
-    val tremoloFrequencyParam = SmoothedParam({ tremolo?.inner!!.getFrequency().toDouble() }, { tremolo?.inner!!.setFrequency(it.toFloat()) })
-    val tremoloDepthParam = SmoothedParam({ tremolo?.inner!!.getDepth().toDouble() }, { tremolo?.inner!!.setDepth(it.toFloat().coerceAtLeast(0.0f).coerceAtMost(1.0f)) })
-    val vibratoFrequencyParam = SmoothedParam({ vibrato?.inner!!.getFrequency().toDouble() }, { vibrato?.inner!!.setFrequency(it.toFloat()) })
-    val vibratoDepthParam = SmoothedParam({ vibrato?.inner!!.getDepth().toDouble() }, { vibrato?.inner!!.setDepth(it.toFloat()) })
-    val bassBoostParam = SmoothedParam({ eq?.inner!!.getGain(1).toDouble() }, { eq?.inner!!.setGain(1, it.toFloat()) })
-    val clipperThresholdParam = SmoothedParam({ clipper?.inner!!.threshold.toDouble() }, { clipper?.inner!!.threshold = it.toFloat() })
-    val rotationParam = SmoothedParam({ rotation?.inner!!.rotationHz.toDouble() }, { rotation?.inner!!.setRotationSpeed(it.toDouble()) })
+    private var timescale: JewelTimescalePcmAudioFilter? = null
+    private var tremolo: BypassFilter<JewelTremoloPcmAudioFilter>? = null
+    private var vibrato: BypassFilter<JewelVibratoPcmAudioFilter>? = null
+    private var eq: JewelEqualizer? = null
+    private var clipper: JewelClipperPcmAudioFilter? = null
+    private var echo: BypassFilter<EchoPcmAudioFilter>? = null
+    private var reverb: BypassFilter<ReverberationPcmAudioFilter>? = null
+    private var rotation: BypassFilter<ScropRotationPcmAudioFilter>? = null
+
+    val timescaleSpeedParam = SmoothedParam(this, { timescale!!.speed }, { timescale!!.setSpeed(it.coerceAtLeast(0.001)) })
+    val timescalePitchParam = SmoothedParam(this, { timescale!!.getSemitonesFromPitch(timescale!!.pitch) }, { timescale!!.setPitchSemiTones(it) })
+    val bassBoostParam = SmoothedParam(this, { eq!!.getGain(1).toDouble() }, { eq!!.setGain(1, it.toFloat()) })
+    val clipperThresholdParam = SmoothedParam(this, { clipper!!.threshold.toDouble() }, { clipper!!.threshold = it.toFloat() })
+    val rotationParam = SmoothedParam(this, { rotation!!.effect.rotationHz }, { rotation!!.effect.setRotationSpeed(it) })
+
+    val tremoloFrequencyParam = SmoothedParam(this, { tremolo!!.effect.frequency.toDouble() }, { tremolo!!.effect.setFrequency(it.toFloat()) })
+    val tremoloDepthParam = SmoothedParam(this, { tremolo!!.effect.getDepth().toDouble() }, { tremolo!!.effect.setDepth(it.toFloat().coerceAtLeast(0.0f).coerceAtMost(1.0f)) })
+
+    val vibratoFrequencyParam = SmoothedParam(this, { vibrato!!.effect.frequency.toDouble() }, { vibrato!!.effect.frequency = it.toFloat() })
+    val vibratoDepthParam = SmoothedParam(this, { vibrato!!.effect.depth.toDouble() }, { vibrato!!.effect.depth = it.toFloat() })
+
+    val echoDecayParam = SmoothedParam(this, { echo!!.effect.getDecay().toDouble() }, { echo!!.effect.setDecay(it.toFloat()) })
+    val echoDelayParam = SmoothedParam(this, { echo!!.effect.getDelay() }, { echo!!.effect.setDelay(it) })
+
+    val reverbLinesParam = SmoothedParam(this, { reverb!!.effect.getLines().toDouble() }, { reverb!!.effect.setLines(it.toInt()) })
+    val reverbSizeParam = SmoothedParam(this, { reverb!!.effect.getSize().toDouble() }, { reverb!!.effect.setSize(it.toFloat()) })
+    val reverbStrengthParam = SmoothedParam(this, { reverb!!.effect.getStrength().toDouble() }, { reverb!!.effect.setStrength(it.toFloat()) })
 
     override fun buildChain(
         track: AudioTrack?,
         format: AudioDataFormat,
         output: UniversalPcmAudioFilter
     ): MutableList<AudioFilter> {
-        val clpr = JewelClipperPcmAudioFilter(output, 1.0f)
-        clipper = SmoothingFilterWrapper(clpr, format.sampleRate, listOf(clipperThresholdParam))
+        val stepper = ParamStepper(output, format.sampleRate, this)
 
-        val t = BypassableTremoloPcmAudioFilter(clipper as FloatPcmAudioFilter, format.channelCount, format.sampleRate)
-        tremolo = SmoothingFilterWrapper(t, format.sampleRate, listOf(tremoloDepthParam, tremoloFrequencyParam))
+        clipper = JewelClipperPcmAudioFilter(stepper, 1.0f)
+        echo = BypassFilter(EchoPcmAudioFilter(clipper, format.channelCount, format.sampleRate), clipper as FloatPcmAudioFilter, { it.getDecay() <= 0f || it.getDelay() <= 0f })
+        reverb = BypassFilter(ReverberationPcmAudioFilter(echo, format.channelCount, format.sampleRate), echo as FloatPcmAudioFilter, { it.getSize() <= 0f || it.getStrength() <= 0f|| it.getLines() <= 0f })
+        tremolo = BypassFilter(JewelTremoloPcmAudioFilter(reverb as FloatPcmAudioFilter, format.channelCount, format.sampleRate), reverb as FloatPcmAudioFilter, { it.getDepth() <= 0f || it.frequency <= 0f })
+        vibrato = BypassFilter(JewelVibratoPcmAudioFilter(tremolo as FloatPcmAudioFilter, format.channelCount, format.sampleRate), tremolo as FloatPcmAudioFilter, { it.depth <= 0f || it.frequency <= 0f })
+        timescale = JewelTimescalePcmAudioFilter(vibrato as FloatPcmAudioFilter, format.channelCount, format.sampleRate)
+        rotation = BypassFilter(ScropRotationPcmAudioFilter(timescale as FloatPcmAudioFilter, format.sampleRate), timescale as FloatPcmAudioFilter, { it.rotationHz == 0.0 })
+        eq = JewelEqualizer(format.channelCount, rotation as FloatPcmAudioFilter)
 
-        val vib = BypassableVibratoPcmAudioFilter(tremolo as FloatPcmAudioFilter, format.channelCount, format.sampleRate)
-        vibrato = SmoothingFilterWrapper(vib, format.sampleRate, listOf(vibratoDepthParam, vibratoFrequencyParam))
+        reset()
 
-        val ts = JewelTimescalePcmAudioFilter(vibrato as FloatPcmAudioFilter, format.channelCount, format.sampleRate)
-        timescale = SmoothingFilterWrapper(ts, format.sampleRate, listOf(timescaleSpeedParam, timescalePitchParam))
+        @Suppress("UNCHECKED_CAST")
+        return mutableListOf(eq, rotation, timescale, vibrato, tremolo, reverb, echo, clipper, stepper) as MutableList<AudioFilter>
+    }
 
-        val tr = ScropRotationPcmAudioFilter(timescale as FloatPcmAudioFilter, format.sampleRate)
-        rotation = SmoothingFilterWrapper(tr, format.sampleRate, listOf(rotationParam))
-
-        val tbb = JewelEqualizer(format.channelCount, rotation as FloatPcmAudioFilter)
-        eq = SmoothingFilterWrapper(tbb, format.sampleRate, listOf(bassBoostParam))
-
-
+    fun reset()
+    {
         timescaleSpeedParam.set(1.0);
         timescalePitchParam.set(0.0);
-        tremoloFrequencyParam.set(2.0);
-        tremoloDepthParam.set(0.0);
-        vibratoFrequencyParam.set(2.0);
-        vibratoDepthParam.set(0.0);
+
         bassBoostParam.set(0.0);
         clipperThresholdParam.set(1.0);
         rotationParam.set(0.0);
 
-        @Suppress("UNCHECKED_CAST")
-        return mutableListOf(eq, timescale, vibrato, tremolo, rotation, clipper) as MutableList<AudioFilter>
+        tremoloFrequencyParam.set(2.0);
+        tremoloDepthParam.set(0.0);
+
+        vibratoFrequencyParam.set(2.0);
+        vibratoDepthParam.set(0.0);
+
+        echoDecayParam.set(0.0)
+        echoDelayParam.set(0.0)
+
+        reverbLinesParam.set(4.0)
+        reverbSizeParam.set(0.0)
+        reverbStrengthParam.set(0.0)
+    }
+
+    fun step(dt: Float)
+    {
+        for (p in smoothedParams)
+        {
+            p.step(dt)
+        }
     }
 }

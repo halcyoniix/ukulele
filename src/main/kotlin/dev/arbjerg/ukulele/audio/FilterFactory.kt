@@ -58,6 +58,11 @@ class SmoothedParam(private val filterFactory: PCMFilterFactory, private val get
 
         setCallback(newVal)
     }
+
+    fun forceUpdate()
+    {
+        setCallback(target)
+    }
 }
 
 class BypassFilter<T : FloatPcmAudioFilter>(
@@ -133,19 +138,26 @@ class PCMFilterFactory : PcmFilterFactory {
         output: UniversalPcmAudioFilter
     ): MutableList<AudioFilter> {
         stepper = ParamStepper(output, format.sampleRate, this)
+        clipper = JewelClipperPcmAudioFilter(stepper as FloatPcmAudioFilter, 1.0f)
+        echo = BypassFilter(EchoPcmAudioFilter(clipper, format.channelCount, format.sampleRate), clipper as FloatPcmAudioFilter, { it.getDecay() <= 0f || it.getDelay() <= 0f })
+        reverb = BypassFilter(ReverberationPcmAudioFilter(echo, format.channelCount, format.sampleRate), echo as FloatPcmAudioFilter, { it.getSize() <= 0f || it.getStrength() <= 0f|| it.getLines() <= 0f })
+        tremolo = BypassFilter(JewelTremoloPcmAudioFilter(reverb as FloatPcmAudioFilter, format.channelCount, format.sampleRate), reverb as FloatPcmAudioFilter, { it.getDepth() <= 0f || it.frequency <= 0f })
+        vibrato = BypassFilter(JewelVibratoPcmAudioFilter(tremolo as FloatPcmAudioFilter, format.channelCount, format.sampleRate), tremolo as FloatPcmAudioFilter, { it.depth <= 0f || it.frequency <= 0f })
+        timescale = JewelTimescalePcmAudioFilter(vibrato as FloatPcmAudioFilter, format.channelCount, format.sampleRate)
+        rotation = BypassFilter(ScropRotationPcmAudioFilter(timescale as FloatPcmAudioFilter, format.sampleRate), timescale as FloatPcmAudioFilter, { it.rotationHz == 0.0 })
+        eq = JewelEqualizer(format.channelCount, rotation as FloatPcmAudioFilter)
+
         if (isFirstRun)
         {
-            clipper = JewelClipperPcmAudioFilter(stepper as FloatPcmAudioFilter, 1.0f)
-            echo = BypassFilter(EchoPcmAudioFilter(clipper, format.channelCount, format.sampleRate), clipper as FloatPcmAudioFilter, { it.getDecay() <= 0f || it.getDelay() <= 0f })
-            reverb = BypassFilter(ReverberationPcmAudioFilter(echo, format.channelCount, format.sampleRate), echo as FloatPcmAudioFilter, { it.getSize() <= 0f || it.getStrength() <= 0f|| it.getLines() <= 0f })
-            tremolo = BypassFilter(JewelTremoloPcmAudioFilter(reverb as FloatPcmAudioFilter, format.channelCount, format.sampleRate), reverb as FloatPcmAudioFilter, { it.getDepth() <= 0f || it.frequency <= 0f })
-            vibrato = BypassFilter(JewelVibratoPcmAudioFilter(tremolo as FloatPcmAudioFilter, format.channelCount, format.sampleRate), tremolo as FloatPcmAudioFilter, { it.depth <= 0f || it.frequency <= 0f })
-            timescale = JewelTimescalePcmAudioFilter(vibrato as FloatPcmAudioFilter, format.channelCount, format.sampleRate)
-            rotation = BypassFilter(ScropRotationPcmAudioFilter(timescale as FloatPcmAudioFilter, format.sampleRate), timescale as FloatPcmAudioFilter, { it.rotationHz == 0.0 })
-            eq = JewelEqualizer(format.channelCount, rotation as FloatPcmAudioFilter)
-
             reset()
             isFirstRun = false
+        }
+        else
+        {
+            for (p in smoothedParams)
+            {
+                p.forceUpdate()
+            }
         }
 
         @Suppress("UNCHECKED_CAST")

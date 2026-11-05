@@ -59,7 +59,7 @@ class YtDlp {
         val lastLine = output.lastOrNull { it.isNotBlank() }?.trim()
 
         val tab = lastLine?.lastIndexOf('\t') ?: -1
-        val file = if (process.exitValue() == 0 && lastLine != null && tab >= 0) {
+        val file = if ((process.exitValue() == 0 || process.exitValue() == 101) && lastLine != null && tab >= 0) {
             runCatching { Path.of(lastLine.substring(tab + 1)) }.getOrNull()
         } else null
 

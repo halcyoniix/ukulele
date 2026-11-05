@@ -118,7 +118,9 @@ class PCMFilterFactory : PcmFilterFactory {
     val timescalePitchParam = SmoothedParam(this, { timescale!!.getSemitonesFromPitch(timescale!!.pitch) }, { timescale!!.setPitchSemiTones(it) })
     val bassBoostParam = SmoothedParam(this, { eq!!.getGain(1).toDouble() }, { eq!!.setGain(1, it.toFloat()) })
     val clipperThresholdParam = SmoothedParam(this, { clipper!!.threshold.toDouble() }, { clipper!!.threshold = it.toFloat() })
+
     val rotationParam = SmoothedParam(this, { rotation!!.effect.rotationHz }, { rotation!!.effect.setRotationSpeed(it) })
+    val rotationDepthParam = SmoothedParam(this, { rotation!!.effect.depth }, { rotation!!.effect.depth = it })
 
     val tremoloFrequencyParam = SmoothedParam(this, { tremolo!!.effect.frequency.toDouble() }, { tremolo!!.effect.setFrequency(it.toFloat()) })
     val tremoloDepthParam = SmoothedParam(this, { tremolo!!.effect.getDepth().toDouble() }, { tremolo!!.effect.setDepth(it.toFloat().coerceAtLeast(0.0f).coerceAtMost(1.0f)) })

@@ -4,27 +4,37 @@ import com.github.natanbc.lavadsp.Converter
 import kotlin.math.min
 
 class EchoConverter(private val sampleRate: Int) : Converter {
-    private var buffer: FloatArray = FloatArray(0)
-    private var position = 0
-    private var decay = 0.5f
-    private var pendingDelay = -1.0
+        private var buffer: FloatArray = FloatArray(0)
+        private var position = 0
+        private var decay = 0.5f
+        private var pendingDelay = -1.0
 
-    fun setDelay(seconds: Double) {
-        pendingDelay = seconds.coerceAtLeast(0.001)
-    }
+        fun setDelay(seconds: Double) {
+            pendingDelay = seconds.coerceAtLeast(0.001)
+        }
 
-    fun setDecay(value: Float) {
-        decay = value.coerceAtLeast(0.0f)
-    }
+        fun setDecay(value: Float) {
+            decay = value.coerceAtLeast(0.0f)
+        }
 
     private fun resizeBuffer() {
         if (pendingDelay == -1.0) return
 
-        val newBuffer = FloatArray((sampleRate * pendingDelay).toInt().coerceAtLeast(1))
+        val newBuffer = FloatArray(
+            (sampleRate * pendingDelay).toInt().coerceAtLeast(1)
+        )
+
         if (buffer.isNotEmpty()) {
             val copyLength = min(buffer.size, newBuffer.size)
-            System.arraycopy(buffer, position, newBuffer, 0, (copyLength - position).coerceAtLeast(0))
-            System.arraycopy(buffer, 0, newBuffer, copyLength - position, position.coerceAtLeast(0))
+
+            val firstCopyLength = min(copyLength, buffer.size - position)
+
+            System.arraycopy(buffer, position, newBuffer, 0, firstCopyLength)
+
+            val secondCopyLength = copyLength - firstCopyLength
+            if (secondCopyLength > 0) {
+                System.arraycopy(buffer, 0, newBuffer, firstCopyLength, secondCopyLength)
+            }
         }
 
         buffer = newBuffer

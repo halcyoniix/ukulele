@@ -51,9 +51,6 @@ class FilterCommand : Command ("filter", "f") {
                         "c", "clip" -> {
                             setSingleParameter(filterFactory.clipperThresholdParam, "clipper threshold", value)
                         }
-                        "rot", "rotation" -> {
-                        	setSingleParameter(filterFactory.rotationParam, "rotation (Hz)", value)
-                        }
                         "reverbLines" -> {
                             setSingleParameter(filterFactory.reverbLinesParam, "reverb lines", value)
                         }
@@ -156,6 +153,28 @@ class FilterCommand : Command ("filter", "f") {
                                 filterFactory.echoDecayParam.rampTo(param2, lerpTime)
                             }
                         }
+                        "rot", "rotation" -> {
+                            if (lerpTime == 0.0f) {
+                                filterFactory.rotationParam.set(param1)
+                                filterFactory.rotationDepthParam.set(param2)
+
+                                val setRotation = filterFactory.rotationParam.get();
+                                val setDepth = filterFactory.rotationDepthParam.get();
+
+                                if (setRotation == 0.0 || setDepth == 0.0)
+                                {
+                                    replyText += "Disabled rotation\n"
+                                }
+                                else
+                                {
+                                    replyText += "Set rotation/depth to ${setRotation}/${setDepth}\n"
+                                }
+                            } else {
+                                replyText += "Started a lerp of rotation/depth from ${filterFactory.rotationParam.get()}/${filterFactory.rotationDepthParam.get()} to $param1/$param2 over $lerpTime seconds\n"
+                                filterFactory.rotationParam.rampTo(param1, lerpTime)
+                                filterFactory.rotationDepthParam.rampTo(param2, lerpTime)
+                            }
+                        }
 					}
 
                 }
@@ -179,7 +198,7 @@ class FilterCommand : Command ("filter", "f") {
                             replyText += "\techo ${filterFactory.echoDelayParam.get()} ${filterFactory.echoDecayParam.get()}\n"
                             replyText += "\tbassboost ${filterFactory.bassBoostParam.get()}\n"
                             replyText += "\tclip ${filterFactory.clipperThresholdParam.get()}\n"
-                            replyText += "\trotation ${filterFactory.rotationParam.get()}\n"
+                            replyText += "\trotation ${filterFactory.rotationParam.get()}/${filterFactory.rotationDepthParam.get()}\n"
                         }
                     }
                 }
@@ -197,7 +216,7 @@ class FilterCommand : Command ("filter", "f") {
     }
 
     // private val matchPattern: Pattern = Pattern.compile("(s|p|speed|pitch)\\s+([\\d.]+)|trem\\s+([\\d.]+)\\s+([\\d.]+)|(r|reset)")
-    private val matchPattern: Pattern = Pattern.compile("(s|p|speed|pitch|bb|bassboost|c|clip|l|lerp|rot|rotation|reverbLines)\\s+([\\d.-]+)|(t|tremolo|v|vibrato|rev|reverb|echo)\\s+([\\d.-]+)\\s+([\\d.-]+)|^(r|reset|list)$")
+    private val matchPattern: Pattern = Pattern.compile("(s|p|speed|pitch|bb|bassboost|c|clip|l|lerp|reverbLines)\\s+([\\d.-]+)|(t|tremolo|v|vibrato|rev|reverb|echo|rot|rotation)\\s+([\\d.-]+)\\s+([\\d.-]+)|^(r|reset|list)$")
     //\ns/speed X.XX\np/pitch X.XX\nt/tremolo X.XX (freq) X.XX (depth 0-1)\nbb/bassboost X.XX\nr/reset"
 	override fun HelpContext.provideHelp() {
 		addUsage("[filter]")

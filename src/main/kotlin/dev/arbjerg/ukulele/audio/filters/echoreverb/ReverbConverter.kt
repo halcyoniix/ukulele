@@ -35,6 +35,7 @@ class ReverberationConverter(private val sampleRate: Int) : Converter {
         val newSize = calculateBufferSize()
         if (this.buffers.size != newSize) {
             this.buffers = this.buffers.copyOf(newSize)
+            position %= newSize
         }
     }
 
@@ -43,6 +44,7 @@ class ReverberationConverter(private val sampleRate: Int) : Converter {
         val newSize = calculateBufferSize()
         if (this.buffers.size != newSize) {
             this.buffers = this.buffers.copyOf(newSize)
+            position %= newSize
         }
     }
 

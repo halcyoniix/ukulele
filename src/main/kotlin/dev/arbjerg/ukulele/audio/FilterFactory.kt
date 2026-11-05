@@ -118,6 +118,7 @@ class PCMFilterFactory : PcmFilterFactory {
     val timescalePitchParam = SmoothedParam(this, { timescale!!.getSemitonesFromPitch(timescale!!.pitch) }, { timescale!!.setPitchSemiTones(it) })
     val bassBoostParam = SmoothedParam(this, { eq!!.getGain(1).toDouble() }, { eq!!.setGain(1, it.toFloat()) })
     val clipperThresholdParam = SmoothedParam(this, { clipper!!.threshold.toDouble() }, { clipper!!.threshold = it.toFloat() })
+    val clipperGainParam = SmoothedParam(this, { clipper!!.gain.toDouble() }, { clipper!!.gain = it.toFloat() })
 
     val rotationParam = SmoothedParam(this, { rotation!!.effect.rotationHz }, { rotation!!.effect.setRotationSpeed(it) })
     val rotationDepthParam = SmoothedParam(this, { rotation!!.effect.depth }, { rotation!!.effect.depth = it })
@@ -143,7 +144,7 @@ class PCMFilterFactory : PcmFilterFactory {
         output: UniversalPcmAudioFilter
     ): MutableList<AudioFilter> {
         stepper = ParamStepper(output, format.sampleRate, this)
-        clipper = JewelClipperPcmAudioFilter(stepper as FloatPcmAudioFilter, 1.0f)
+        clipper = JewelClipperPcmAudioFilter(stepper as FloatPcmAudioFilter, 1.0f, 1.0f)
         echo = BypassFilter(EchoPcmAudioFilter(clipper, format.channelCount, format.sampleRate), clipper as FloatPcmAudioFilter, { it.getDecay() <= 0f || it.getDelay() <= 0f })
         reverb = BypassFilter(ReverberationPcmAudioFilter(echo, format.channelCount, format.sampleRate), echo as FloatPcmAudioFilter, { it.getSize() <= 0f || it.getStrength() <= 0f|| it.getLines() <= 0f })
         tremolo = BypassFilter(JewelTremoloPcmAudioFilter(reverb as FloatPcmAudioFilter, format.channelCount, format.sampleRate), reverb as FloatPcmAudioFilter, { it.getDepth() <= 0f || it.frequency <= 0f })
@@ -176,6 +177,7 @@ class PCMFilterFactory : PcmFilterFactory {
 
         bassBoostParam.set(0.0);
         clipperThresholdParam.set(1.0);
+        clipperGainParam.set(1.0);
         rotationParam.set(0.0);
 
         tremoloFrequencyParam.set(2.0);

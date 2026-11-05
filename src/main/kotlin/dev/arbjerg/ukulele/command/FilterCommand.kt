@@ -196,7 +196,7 @@ class FilterCommand : Command ("filter", "f") {
     }
 
     // private val matchPattern: Pattern = Pattern.compile("(s|p|speed|pitch)\\s+([\\d.]+)|trem\\s+([\\d.]+)\\s+([\\d.]+)|(r|reset)")
-    private val matchPattern: Pattern = Pattern.compile("(s|p|speed|pitch|bb|bassboost|c|clip|l|lerp|rot|rotation|reverbLines)\\s+([\\d.-]+)|(t|tremolo|v|vibrato|rev|reverb|echo)\\s+([\\d.-]+)\\s+([\\d.-]+)|(r|reset|list)")
+    private val matchPattern: Pattern = Pattern.compile("(s|p|speed|pitch|bb|bassboost|c|clip|l|lerp|rot|rotation|reverbLines)\\s+([\\d.-]+)|(t|tremolo|v|vibrato|rev|reverb|echo)\\s+([\\d.-]+)\\s+([\\d.-]+)|^(r|reset|list)$")
     //\ns/speed X.XX\np/pitch X.XX\nt/tremolo X.XX (freq) X.XX (depth 0-1)\nbb/bassboost X.XX\nr/reset"
 	override fun HelpContext.provideHelp() {
 		addUsage("[filter]")

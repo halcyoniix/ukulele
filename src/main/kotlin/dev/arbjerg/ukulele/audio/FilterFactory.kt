@@ -132,9 +132,9 @@ class PCMFilterFactory : PcmFilterFactory {
         format: AudioDataFormat,
         output: UniversalPcmAudioFilter
     ): MutableList<AudioFilter> {
+        stepper = ParamStepper(output, format.sampleRate, this)
         if (isFirstRun)
         {
-            stepper = ParamStepper(output, format.sampleRate, this)
             clipper = JewelClipperPcmAudioFilter(stepper as FloatPcmAudioFilter, 1.0f)
             echo = BypassFilter(EchoPcmAudioFilter(clipper, format.channelCount, format.sampleRate), clipper as FloatPcmAudioFilter, { it.getDecay() <= 0f || it.getDelay() <= 0f })
             reverb = BypassFilter(ReverberationPcmAudioFilter(echo, format.channelCount, format.sampleRate), echo as FloatPcmAudioFilter, { it.getSize() <= 0f || it.getStrength() <= 0f|| it.getLines() <= 0f })

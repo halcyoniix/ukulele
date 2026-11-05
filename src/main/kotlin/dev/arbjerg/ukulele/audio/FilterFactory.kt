@@ -14,6 +14,7 @@ import dev.arbjerg.ukulele.audio.filters.JewelEqualizer
 import dev.arbjerg.ukulele.audio.filters.JewelVibratoPcmAudioFilter
 import dev.arbjerg.ukulele.audio.filters.JewelClipperPcmAudioFilter
 import dev.arbjerg.ukulele.audio.filters.JewelTimescalePcmAudioFilter
+import dev.arbjerg.ukulele.audio.filters.ScropRotationPcmAudioFilter
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.abs
 import kotlin.math.sign
@@ -149,6 +150,7 @@ class PCMFilterFactory : PcmFilterFactory {
     private var vibrato: SmoothingFilterWrapper<BypassableVibratoPcmAudioFilter>? = null
     private var eq: SmoothingFilterWrapper<JewelEqualizer>? = null
     private var clipper: SmoothingFilterWrapper<JewelClipperPcmAudioFilter>? = null
+    private var rotation: SmoothingFilterWrapper<ScropRotationPcmAudioFilter>? = null
 
     val timescaleSpeedParam = SmoothedParam({ timescale?.inner!!.speed }, { timescale?.inner!!.setSpeed(it.coerceAtLeast(0.001)) })
     val timescalePitchParam = SmoothedParam({ timescale?.inner!!.getSemitonesFromPitch(timescale?.inner!!.pitch) }, { timescale?.inner!!.setPitchSemiTones(it) })
@@ -158,6 +160,7 @@ class PCMFilterFactory : PcmFilterFactory {
     val vibratoDepthParam = SmoothedParam({ vibrato?.inner!!.getDepth().toDouble() }, { vibrato?.inner!!.setDepth(it.toFloat()) })
     val bassBoostParam = SmoothedParam({ eq?.inner!!.getGain(1).toDouble() }, { eq?.inner!!.setGain(1, it.toFloat()) })
     val clipperThresholdParam = SmoothedParam({ clipper?.inner!!.threshold.toDouble() }, { clipper?.inner!!.threshold = it.toFloat() })
+    val rotationParam = SmoothedParam({ rotation?.inner!!.rotationHz.toDouble() }, { rotation?.inner!!.setRotationSpeed(it.toDouble()) })
 
     override fun buildChain(
         track: AudioTrack?,
@@ -176,8 +179,12 @@ class PCMFilterFactory : PcmFilterFactory {
         val ts = JewelTimescalePcmAudioFilter(vibrato as FloatPcmAudioFilter, format.channelCount, format.sampleRate)
         timescale = SmoothingFilterWrapper(ts, format.sampleRate, listOf(timescaleSpeedParam, timescalePitchParam))
 
-        val tbb = JewelEqualizer(format.channelCount, timescale as FloatPcmAudioFilter)
+        val tr = ScropRotationPcmAudioFilter(timescale as FloatPcmAudioFilter, format.sampleRate)
+        rotation = SmoothingFilterWrapper(tr, format.sampleRate, listOf(rotationParam))
+
+        val tbb = JewelEqualizer(format.channelCount, rotation as FloatPcmAudioFilter)
         eq = SmoothingFilterWrapper(tbb, format.sampleRate, listOf(bassBoostParam))
+
 
         timescaleSpeedParam.set(1.0);
         timescalePitchParam.set(0.0);
@@ -187,8 +194,9 @@ class PCMFilterFactory : PcmFilterFactory {
         vibratoDepthParam.set(0.0);
         bassBoostParam.set(0.0);
         clipperThresholdParam.set(1.0);
+        rotationParam.set(0.0);
 
         @Suppress("UNCHECKED_CAST")
-        return mutableListOf(eq, timescale, vibrato, tremolo, clipper) as MutableList<AudioFilter>
+        return mutableListOf(eq, timescale, vibrato, tremolo, rotation, clipper) as MutableList<AudioFilter>
     }
 }

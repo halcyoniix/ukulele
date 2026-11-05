@@ -50,6 +50,9 @@ class FilterCommand : Command ("filter", "f") {
                         "c", "clip" -> {
                             setSingleParameter(player.filterFactory.clipperThresholdParam, "clipper threshold", value)
                         }
+                        "r", "rotation" -> {
+                        	setSingleParameter(player.filterFactory.rotationParam, "rotation (Hz)", value)
+                        }
                         "l", "lerp" -> {
                             lerpTime = value.toFloat()
                         }
@@ -112,7 +115,7 @@ class FilterCommand : Command ("filter", "f") {
                     val name = matcher.group(6)
 
                     when (name) {
-                        "r", "reset" -> {
+                        "reset" -> {
                             player.filterFactory.timescaleSpeedParam.set(1.0)
                             player.filterFactory.timescalePitchParam.set(0.0)
                             player.filterFactory.tremoloFrequencyParam.set(0.0)
@@ -121,10 +124,11 @@ class FilterCommand : Command ("filter", "f") {
                             player.filterFactory.vibratoDepthParam.set(0.0)
                             player.filterFactory.bassBoostParam.set(0.0)
                             player.filterFactory.clipperThresholdParam.set(1.0)
+                            player.filterFactory.rotationParam.set(0.0)
 
                             replyText += "Reset filters\n"
                         }
-                        "l", "list" ->
+                        "list" ->
                         {
                             replyText += "Current filters:\n"
                             replyText += "\tspeed ${player.filterFactory.timescaleSpeedParam.get()}\n"
@@ -133,6 +137,7 @@ class FilterCommand : Command ("filter", "f") {
                             replyText += "\tvibrato ${player.filterFactory.vibratoFrequencyParam.get()} ${player.filterFactory.vibratoDepthParam.get()}\n"
                             replyText += "\tbassboost ${player.filterFactory.bassBoostParam.get()}\n"
                             replyText += "\tclip ${player.filterFactory.clipperThresholdParam.get()}\n"
+                            replyText += "\trotation ${player.filterFactory.rotationParam.get()}\n"
                         }
                     }
                 }
@@ -150,7 +155,7 @@ class FilterCommand : Command ("filter", "f") {
     }
 
     // private val matchPattern: Pattern = Pattern.compile("(s|p|speed|pitch)\\s+([\\d.]+)|trem\\s+([\\d.]+)\\s+([\\d.]+)|(r|reset)")
-    private val matchPattern: Pattern = Pattern.compile("(s|p|speed|pitch|bb|bassboost|c|clip|l|lerp)\\s+([\\d.-]+)|(t|tremolo|v|vibrato)\\s+([\\d.-]+)\\s+([\\d.-]+)|(r|reset|list)")
+    private val matchPattern: Pattern = Pattern.compile("(s|p|speed|pitch|bb|bassboost|c|clip|l|lerp|r|rotation)\\s+([\\d.-]+)|(t|tremolo|v|vibrato)\\s+([\\d.-]+)\\s+([\\d.-]+)|(reset|list)")
     //\ns/speed X.XX\np/pitch X.XX\nt/tremolo X.XX (freq) X.XX (depth 0-1)\nbb/bassboost X.XX\nr/reset"
 	override fun HelpContext.provideHelp() {
 		addUsage("[filter]")
@@ -160,10 +165,11 @@ class FilterCommand : Command ("filter", "f") {
 		addUsages("tremolo", "t <freq> <depth>")
 		addUsages("vibrato", "v <freq> <depth>")
 		addUsages("bassboost", "bb <amount>")
+		addUsages("rotation", "r <hz>")
 		addUsages("clip", "c <amount>")
         addUsages("lerp", "l")
 		addUsages("list")
-		addUsages("reset", "r")
+		addUsages("reset")
 		addDescription("Filters can be chained in any order separated by whitespace")
 		addUsage("speed 0.5 pitch 3 vibrato 0.25 20")
         addUsage("speed 0.5 lerp 10 pitch 3 vibrato 0.25 20 // lerps only the values after the lerp")

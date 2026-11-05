@@ -6,7 +6,7 @@ import dev.arbjerg.ukulele.jda.Command
 import dev.arbjerg.ukulele.jda.CommandContext
 import org.springframework.stereotype.Component
 
-val PERMITTED_VOLUME_RANGE = 0..1000
+val PERMITTED_VOLUME_RANGE = 0..400
 
 @Component
 class VolumeCommand(val players: PlayerRegistry) : Command("volume", "v") {

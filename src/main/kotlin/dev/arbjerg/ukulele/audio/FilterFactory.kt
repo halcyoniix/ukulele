@@ -48,6 +48,9 @@ class SmoothedParam(private val filterFactory: PCMFilterFactory, private val get
         }
         val cur = getCallback()
         if (cur == target) return
+
+        if (perSecond.isInfinite()) { setCallback(target); return }
+
         val delta = perSecond * dt
 
         var newVal = target

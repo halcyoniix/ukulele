@@ -10,17 +10,17 @@ class EchoConverter(private val sampleRate: Int) : Converter {
     private var pendingDelay = -1.0
 
     fun setDelay(seconds: Double) {
-        pendingDelay = seconds
+        pendingDelay = seconds.coerceAtLeast(0.001)
     }
 
     fun setDecay(value: Float) {
-        decay = value
+        decay = value.coerceAtLeast(0.0f)
     }
 
     private fun resizeBuffer() {
         if (pendingDelay == -1.0) return
 
-        val newBuffer = FloatArray((sampleRate * pendingDelay).toInt())
+        val newBuffer = FloatArray((sampleRate * pendingDelay).toInt().coerceAtLeast(1))
         if (buffer.isNotEmpty()) {
             val copyLength = min(buffer.size, newBuffer.size)
             System.arraycopy(buffer, position, newBuffer, 0, copyLength - position)

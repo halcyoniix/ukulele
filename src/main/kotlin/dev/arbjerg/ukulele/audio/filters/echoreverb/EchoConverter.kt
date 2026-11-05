@@ -23,8 +23,8 @@ class EchoConverter(private val sampleRate: Int) : Converter {
         val newBuffer = FloatArray((sampleRate * pendingDelay).toInt().coerceAtLeast(1))
         if (buffer.isNotEmpty()) {
             val copyLength = min(buffer.size, newBuffer.size)
-            System.arraycopy(buffer, position, newBuffer, 0, copyLength - position)
-            System.arraycopy(buffer, 0, newBuffer, copyLength - position, position)
+            System.arraycopy(buffer, position, newBuffer, 0, (copyLength - position).coerceAtLeast(0))
+            System.arraycopy(buffer, 0, newBuffer, copyLength - position, position.coerceAtLeast(0))
         }
 
         buffer = newBuffer

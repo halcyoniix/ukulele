@@ -37,7 +37,7 @@ class NowPlayingCommand : Command ("nowplaying", "np") {
 
         //Set up common parts of the embed
         val message = EmbedBuilder()
-                .setTitle(track.info.title, track.info.uri)
+                .setTitle(track.info.title, if (track.info.uri.startsWith("http")) track.info.uri else "http://google.com")
                 .setFooter("Source: ${track.sourceManager.sourceName}")
 
         //Prepare embeds for overrides.
@@ -60,7 +60,9 @@ class NowPlayingCommand : Command ("nowplaying", "np") {
 
         fun default(): MessageEmbed {
             message.setTitle(track.info.title)  // Show just the title of the radio station. Weird uri jank.
-            message.setUrl(track.info.uri)
+            if (track.info.uri.startsWith("http")) {
+                message.setUrl(track.info.uri)
+            }
             message.setColor(DEFAULT_GREY)
             message.addField("Time", timeField, true)
             return message.build()

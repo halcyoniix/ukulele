@@ -29,11 +29,11 @@ class SmoothedParam(private val filterFactory: PCMFilterFactory, private val get
     private var perSecond = 0f
 
     fun rampTo(target: Double, seconds: Float) = pending.set(Ramp(target, seconds))
-    fun set(target: Double) =
-        {
-            rampTo(target, 0f)
-            step(0.01f)
-        }
+    fun set(target: Double)
+    {
+        rampTo(target, 0f)
+        step(0.01f)
+    }
     fun get() = getCallback()
 
     init {

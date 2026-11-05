@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component
 import java.nio.Buffer
 import java.nio.ByteBuffer
 
+var globalFilterFactory = PCMFilterFactory()
 
 class Player(val beans: Beans, guildProperties: GuildProperties) : AudioEventAdapter(), AudioSendHandler {
     @Component
@@ -30,7 +31,7 @@ class Player(val beans: Beans, guildProperties: GuildProperties) : AudioEventAda
             val ytDlp: YtDlp
     )
 
-    var filterFactory = PCMFilterFactory()
+    var filterFactory = globalFilterFactory
 
     private val guildId = guildProperties.guildId
     private val queue = TrackQueue()

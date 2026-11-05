@@ -43,6 +43,7 @@ class YtDlp {
             "--encoding", "utf-8",
             "--print", "after_move:%(title)s\t%(filepath)s",
             "--no-simulate",
+            "--max-downloads 1",
             "--", target
         )
         log.info("Running yt-dlp for {}", target)

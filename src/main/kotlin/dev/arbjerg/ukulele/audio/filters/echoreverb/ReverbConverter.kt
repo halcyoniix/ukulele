@@ -33,7 +33,7 @@ class ReverberationConverter(private val sampleRate: Int) : Converter {
     fun setDelays(delays: FloatArray) {
         this.delays = delays
         val newSize = calculateBufferSize()
-        if (this.buffers.size != newSize) {
+        if (this.buffers.size != newSize && newSize != 0) {
             this.buffers = this.buffers.copyOf(newSize)
             position %= newSize
         }
@@ -42,7 +42,7 @@ class ReverberationConverter(private val sampleRate: Int) : Converter {
     fun setGains(gains: FloatArray) {
         this.gains = gains
         val newSize = calculateBufferSize()
-        if (this.buffers.size != newSize) {
+        if (this.buffers.size != newSize && newSize != 0) {
             this.buffers = this.buffers.copyOf(newSize)
             position %= newSize
         }

@@ -11,6 +11,10 @@ import java.util.regex.Pattern
 @Component
 class FilterCommand : Command ("filter", "f") {
 
+	fun	formatDouble(num: Double) : String {
+		return "%.3f".format(num)
+	}
+
 	override suspend fun CommandContext.invoke() {
 		if (argumentText.isBlank())
 			return replyHelp()
@@ -26,14 +30,20 @@ class FilterCommand : Command ("filter", "f") {
 		fun setSingleParameter(param: SmoothedParam, paramName: String, value: Double) {
 			if (lerpTime == 0.0f) {
 				param.set(value)
-				replyText += "Set $paramName to $value\n"
+				replyText += "Set ${paramName.lowercase()} to $value\n"
 			} else {
-				replyText += "Started a lerp of $paramName from ${param.get()} to $value over $lerpTime seconds\n"
+				// replyText += "Started a lerp of $paramName from ${formatDouble(param.get())} to $value over $lerpTime seconds\n"
+				// param.rampTo(value, lerpTime)
+				// replyText += "Started a $lerpTime second lerp!\n"
+				replyText += "$paramName: ${formatDouble(param.get())} -> $value\n"
 				param.rampTo(value, lerpTime)
 			}
 		}
 
 		while (matcher.find()) {
+			if (lerpTime > 0.0f && replyText == "") {
+				replyText += "Started a $lerpTime second lerp!\n"
+			}
 			when {
 				matcher.group(1) != null -> {
 					val name = matcher.group(1)
@@ -46,13 +56,10 @@ class FilterCommand : Command ("filter", "f") {
 							setSingleParameter(filterFactory.timescalePitchParam, "Pitch", value)
 						}
 						"bb", "bassboost" -> {
-							setSingleParameter(filterFactory.bassBoostParam, "bass boost", value)
+							setSingleParameter(filterFactory.bassBoostParam, "Bass Boost", value)
 						}
-						// "c", "clip" -> {
-						// 	setSingleParameter(filterFactory.clipperThresholdParam, "clipper threshold", value)
-						// }
 						"reverbLines" -> {
-							setSingleParameter(filterFactory.reverbLinesParam, "reverb lines", value)
+							setSingleParameter(filterFactory.reverbLinesParam, "Reverb Lines", value)
 						}
 						"l", "lerp" -> {
 							lerpTime = value.toFloat()
@@ -68,141 +75,115 @@ class FilterCommand : Command ("filter", "f") {
 						param2 = matcher.group(5).toDouble()
 					}
 
+
 					val name = matcher.group(3)
 					when (name) {
 						"t", "tremolo" -> {
-							param2 = if (param2 == null) filterFactory.tremoloDepthParam.get() else param2
-							if (lerpTime == 0.0f) {
-								filterFactory.tremoloFrequencyParam.set(param1)
-								filterFactory.tremoloDepthParam.set(param2)
-
-								val setFreq = filterFactory.tremoloFrequencyParam.get()
-								val setDepth = filterFactory.tremoloDepthParam.get()
-
-								if (setFreq == 0.0 || setDepth == 0.0)
-								{
-									replyText += "Disabled tremolo\n"
-								}
-								else
-								{
-									replyText += "Set tremolo freq/depth to ${setFreq}/${setDepth}\n"
-								}
+							var targetParam1 = filterFactory.tremoloFrequencyParam
+							var targetParam2 = filterFactory.tremoloDepthParam
+							param2 = if (param2 == null) targetParam2.get() else param2
+							if (lerpTime > 0.0f) {
+								var lp1 = targetParam1.get()
+								var lp2 = targetParam2.get()
+								replyText += "--- Tremolo ---\n"
+								replyText += "\tFrequency: ${formatDouble(lp1)} -> ${formatDouble(param1)}\n"
+								replyText += "\tDepth: ${formatDouble(lp2)} -> ${formatDouble(param2)}\n"
+								targetParam1.rampTo(param1, lerpTime)
+								targetParam2.rampTo(param2, lerpTime)
 							} else {
-								replyText += "Started a lerp of tremolo freq/depth from ${filterFactory.tremoloFrequencyParam.get()}/${filterFactory.tremoloDepthParam.get()} to $param1/$param2 over $lerpTime seconds\n"
-								filterFactory.tremoloFrequencyParam.rampTo(param1, lerpTime)
-								filterFactory.tremoloDepthParam.rampTo(param2, lerpTime)
+								targetParam1.set(param1)
+								targetParam2.set(param2)
+								replyText += if (param1 == 0.0 || param2 == 0.0) "Disabled tremolo\n" else "Set tremolo freq/depth to ${param1}/${param2}\n"
 							}
 						}
 						"v", "vibrato" -> {
-							param2 = if (param2 == null) filterFactory.vibratoDepthParam.get() else param2
-							if (lerpTime == 0.0f) {
-								filterFactory.vibratoFrequencyParam.set(param1)
-								filterFactory.vibratoDepthParam.set(param2)
-
-								val setFreq = filterFactory.vibratoFrequencyParam.get()
-								val setDepth = filterFactory.vibratoDepthParam.get()
-
-								if (setFreq == 0.0 || setDepth == 0.0)
-								{
-									replyText += "Disabled vibrato\n"
-								}
-								else
-								{
-									replyText += "Set vibrato freq/depth to ${setFreq}/${setDepth}\n"
-								}
+							var targetParam1 = filterFactory.vibratoFrequencyParam
+							var targetParam2 = filterFactory.vibratoDepthParam
+							param2 = if (param2 == null) targetParam2.get() else param2
+							if (lerpTime > 0.0f) {
+								var lp1 = targetParam1.get()
+								var lp2 = targetParam2.get()
+								replyText += "--- Vibrato ---\n"
+								replyText += "\tFrequency: ${formatDouble(lp1)} -> ${formatDouble(param1)}\n"
+								replyText += "\tDepth: ${formatDouble(lp2)} -> ${formatDouble(param2)}\n"
+								targetParam1.rampTo(param1, lerpTime)
+								targetParam2.rampTo(param2, lerpTime)
 							} else {
-								replyText += "Started a lerp of vibrato freq/depth from ${filterFactory.vibratoFrequencyParam.get()}/${filterFactory.vibratoDepthParam.get()} to $param1/$param2 over $lerpTime seconds\n"
-								filterFactory.vibratoFrequencyParam.rampTo(param1, lerpTime)
-								filterFactory.vibratoDepthParam.rampTo(param2, lerpTime)
+								targetParam1.set(param1)
+								targetParam2.set(param2)
+								replyText += if (param1 == 0.0 || param2 == 0.0) "Disabled vibrato\n" else "Set vibrato freq/depth to ${param1}/${param2}\n"
 							}
 						}
 						"reverb", "rev" -> {
-							param2 = if (param2 == null) filterFactory.reverbStrengthParam.get() else param2
-							if (lerpTime == 0.0f) {
-								filterFactory.reverbSizeParam.set(param1)
-								filterFactory.reverbStrengthParam.set(param2)
-
-								val setSize = filterFactory.reverbSizeParam.get()
-								val setStrength = filterFactory.reverbStrengthParam.get()
-
-								if (setSize == 0.0 || setStrength == 0.0)
-								{
-									replyText += "Disabled reverb\n"
-								}
-								else
-								{
-									replyText += "Set reverb size/strength to ${setSize}/${setStrength}\n"
-								}
+							var targetParam1 = filterFactory.reverbSizeParam
+							var targetParam2 = filterFactory.reverbStrengthParam
+							param2 = if (param2 == null) targetParam2.get() else param2
+							if (lerpTime > 0.0f) {
+								var lp1 = targetParam1.get()
+								var lp2 = targetParam2.get()
+								replyText += "--- Reverb ---\n"
+								replyText += "\tSize: ${formatDouble(lp1)} -> ${formatDouble(param1)}\n"
+								replyText += "\tStrength: ${formatDouble(lp2)} -> ${formatDouble(param2)}\n"
+								targetParam1.rampTo(param1, lerpTime)
+								targetParam2.rampTo(param2, lerpTime)
 							} else {
-								replyText += "Started a lerp of reverb size/strength from ${filterFactory.reverbSizeParam.get()}/${filterFactory.reverbStrengthParam.get()} to $param1/$param2 over $lerpTime seconds\n"
-								filterFactory.reverbSizeParam.rampTo(param1, lerpTime)
-								filterFactory.reverbStrengthParam.rampTo(param2, lerpTime)
+								targetParam1.set(param1)
+								targetParam2.set(param2)
+								replyText += if (param1 == 0.0 || param2 == 0.0) "Disabled reverb\n" else "Set reverb size/strength to ${param1}/${param2}\n"
 							}
 						}
 						"echo" -> {
-							param2 = if (param2 == null) filterFactory.echoDecayParam.get() else param2
-							if (lerpTime == 0.0f) {
-								filterFactory.echoDelayParam.set(param1)
-								filterFactory.echoDecayParam.set(param2)
-
-								val setDelay = filterFactory.echoDelayParam.get()
-								val setDecay = filterFactory.echoDecayParam.get()
-
-								if (setDelay == 0.0 || setDecay == 0.0)
-								{
-									replyText += "Disabled echo\n"
-								}
-								else
-								{
-									replyText += "Set echo delay/decay to ${setDelay}/${setDecay}\n"
-								}
+							var targetParam1 = filterFactory.echoDelayParam
+							var targetParam2 = filterFactory.echoDecayParam
+							param2 = if (param2 == null) targetParam2.get() else param2
+							if (lerpTime > 0.0f) {
+								var lp1 = targetParam1.get()
+								var lp2 = targetParam2.get()
+								replyText += "--- Echo ---\n"
+								replyText += "\tDelay: ${formatDouble(lp1)} -> ${formatDouble(param1)}\n"
+								replyText += "\tDecay: ${formatDouble(lp2)} -> ${formatDouble(param2)}\n"
+								targetParam1.rampTo(param1, lerpTime)
+								targetParam2.rampTo(param2, lerpTime)
 							} else {
-								replyText += "Started a lerp of echo delay/decay from ${filterFactory.echoDelayParam.get()}/${filterFactory.echoDecayParam.get()} to $param1/$param2 over $lerpTime seconds\n"
-								filterFactory.echoDelayParam.rampTo(param1, lerpTime)
-								filterFactory.echoDecayParam.rampTo(param2, lerpTime)
+								targetParam1.set(param1)
+								targetParam2.set(param2)
+								replyText += if (param1 == 0.0 || param2 == 0.0) "Disabled echo\n" else "Set echo delay/decay to ${param1}/${param2}\n"
 							}
 						}
 						"rot", "rotation" -> {
-							param2 = if (param2 == null) filterFactory.rotationDepthParam.get() else param2
-							if (lerpTime == 0.0f) {
-								filterFactory.rotationParam.set(param1)
-								filterFactory.rotationDepthParam.set(param2)
-
-								val setRotation = filterFactory.rotationParam.get()
-								val setDepth = filterFactory.rotationDepthParam.get()
-
-								if (setRotation == 0.0 || setDepth == 0.0)
-								{
-									replyText += "Disabled rotation\n"
-								}
-								else
-								{
-									replyText += "Set rotation/depth to ${setRotation}/${setDepth}\n"
-								}
+							var targetParam1 = filterFactory.rotationParam
+							var targetParam2 = filterFactory.rotationDepthParam
+							param2 = if (param2 == null) targetParam2.get() else param2
+							if (lerpTime > 0.0f) {
+								var lp1 = targetParam1.get()
+								var lp2 = targetParam2.get()
+								replyText += "--- Rotation ---\n"
+								replyText += "\tFrequency: ${formatDouble(lp1)} -> ${formatDouble(param1)}\n"
+								replyText += "\tDepth: ${formatDouble(lp2)} -> ${formatDouble(param2)}\n"
+								targetParam1.rampTo(param1, lerpTime)
+								targetParam2.rampTo(param2, lerpTime)
 							} else {
-								replyText += "Started a lerp of rotation/depth from ${filterFactory.rotationParam.get()}/${filterFactory.rotationDepthParam.get()} to $param1/$param2 over $lerpTime seconds\n"
-								filterFactory.rotationParam.rampTo(param1, lerpTime)
-								filterFactory.rotationDepthParam.rampTo(param2, lerpTime)
+								targetParam1.set(param1)
+								targetParam2.set(param2)
+								replyText += if (param1 == 0.0 || param2 == 0.0) "Disabled rotation\n" else "Set rotation/depth to ${param1}/${param2}\n"
 							}
 						}
 						"c", "clip" -> {
-							param2 = if (param2 == null) filterFactory.clipperGainParam.get() else param2
-							if (lerpTime == 0.0f) {
-								filterFactory.clipperThresholdParam.set(param1)
-								filterFactory.clipperGainParam.set(param2)
-
-								val setThreshold = filterFactory.clipperThresholdParam.get()
-								val setGain = filterFactory.clipperGainParam.get()
-
-								if (setThreshold == 1.0 && setGain == 1.0) {
-									replyText += "Disabled clipper and gain\n"
-								} else {
-									replyText += "Set clipper threshold/gain to ${setThreshold}/${setGain}\n"
-								}
+							var targetParam1 = filterFactory.clipperThresholdParam
+							var targetParam2 = filterFactory.clipperGainParam
+							param2 = if (param2 == null) targetParam2.get() else param2
+							if (lerpTime > 0.0f) {
+								var lp1 = targetParam1.get()
+								var lp2 = targetParam2.get()
+								replyText += "--- Clip ---\n"
+								replyText += "\tThreshold: ${formatDouble(lp1)} -> ${formatDouble(param1)}\n"
+								replyText += "\tGain: ${formatDouble(lp2)} -> ${formatDouble(param2)}\n"
+								targetParam1.rampTo(param1, lerpTime)
+								targetParam2.rampTo(param2, lerpTime)
 							} else {
-								replyText += "Started a lerp of threshold/gain from ${filterFactory.clipperThresholdParam.get()}/${filterFactory.clipperGainParam.get()} to $param1/$param2 over $lerpTime seconds\n"
-								filterFactory.clipperThresholdParam.rampTo(param1, lerpTime)
-								filterFactory.clipperGainParam.rampTo(param2, lerpTime)
+								targetParam1.set(param1)
+								targetParam2.set(param2)
+								replyText += if (param1 == 0.0 || param2 == 0.0) "Disabled clipper\n" else "Set clipper threshold/gain to ${param1}/${param2}\n"
 							}
 						}
 					}
@@ -219,16 +200,16 @@ class FilterCommand : Command ("filter", "f") {
 						}
 						"list" ->
 						{
-							replyText += "Current filters:\n"
-							replyText += "\tspeed ${filterFactory.timescaleSpeedParam.get()}\n"
-							replyText += "\tpitch ${filterFactory.timescalePitchParam.get()}\n"
-							replyText += "\ttremolo ${filterFactory.tremoloFrequencyParam.get()} ${filterFactory.tremoloDepthParam.get()}\n"
-							replyText += "\tvibrato ${filterFactory.vibratoFrequencyParam.get()} ${filterFactory.vibratoDepthParam.get()}\n"
-							replyText += "\treverb ${filterFactory.reverbSizeParam.get()} ${filterFactory.reverbStrengthParam.get()} (${filterFactory.reverbLinesParam.get().toInt()} lines)\n"
-							replyText += "\techo ${filterFactory.echoDelayParam.get()} ${filterFactory.echoDecayParam.get()}\n"
-							replyText += "\tbassboost ${filterFactory.bassBoostParam.get()}\n"
-							replyText += "\tclip ${filterFactory.clipperThresholdParam.get()}\n"
-							replyText += "\trotation ${filterFactory.rotationParam.get()}/${filterFactory.rotationDepthParam.get()}\n"
+							replyText += "--- Current Filters ---\n"
+							replyText += "\tSpeed: ${formatDouble(filterFactory.timescaleSpeedParam.get())}\n"
+							replyText += "\tPitch: ${formatDouble(filterFactory.timescalePitchParam.get())}\n"
+							replyText += "\tTremolo: ${formatDouble(filterFactory.tremoloFrequencyParam.get())} ${formatDouble(filterFactory.tremoloDepthParam.get())}\n"
+							replyText += "\tVibrato: ${formatDouble(filterFactory.vibratoFrequencyParam.get())} ${formatDouble(filterFactory.vibratoDepthParam.get())}\n"
+							replyText += "\tReverb: ${formatDouble(filterFactory.reverbSizeParam.get())} ${formatDouble(filterFactory.reverbStrengthParam.get())} (${filterFactory.reverbLinesParam.get().toInt()} lines)\n"
+							replyText += "\tEcho: ${formatDouble(filterFactory.echoDelayParam.get())} ${formatDouble(filterFactory.echoDecayParam.get())}\n"
+							replyText += "\tBass Boost: ${formatDouble(filterFactory.bassBoostParam.get())}\n"
+							replyText += "\tClip: ${formatDouble(filterFactory.clipperThresholdParam.get())}\n"
+							replyText += "\tRotation: ${formatDouble(filterFactory.rotationParam.get())}/${formatDouble(filterFactory.rotationDepthParam.get())}\n"
 						}
 					}
 				}

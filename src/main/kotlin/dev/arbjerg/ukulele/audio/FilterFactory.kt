@@ -114,9 +114,12 @@ class PCMFilterFactory : PcmFilterFactory {
     private var reverb: BypassFilter<ReverberationPcmAudioFilter>? = null
     private var rotation: BypassFilter<ScropRotationPcmAudioFilter>? = null
 
+    val timescaleRateParam = SmoothedParam(this, { timescale!!.rate }, { timescale!!.setRate(it.coerceAtLeast(0.001)) })
     val timescaleSpeedParam = SmoothedParam(this, { timescale!!.speed }, { timescale!!.setSpeed(it.coerceAtLeast(0.001)) })
     val timescalePitchParam = SmoothedParam(this, { timescale!!.getSemitonesFromPitch(timescale!!.pitch) }, { timescale!!.setPitchSemiTones(it) })
+
     val bassBoostParam = SmoothedParam(this, { eq!!.getGain(1).toDouble() }, { eq!!.setGain(1, it.toFloat()) })
+
     val clipperThresholdParam = SmoothedParam(this, { clipper!!.threshold.toDouble() }, { clipper!!.threshold = it.toFloat() })
     val clipperGainParam = SmoothedParam(this, { clipper!!.gain.toDouble() }, { clipper!!.gain = it.toFloat() })
 
@@ -172,6 +175,7 @@ class PCMFilterFactory : PcmFilterFactory {
 
     fun reset()
     {
+    	timescaleRateParam.set(1.0);
         timescaleSpeedParam.set(1.0);
         timescalePitchParam.set(0.0);
 

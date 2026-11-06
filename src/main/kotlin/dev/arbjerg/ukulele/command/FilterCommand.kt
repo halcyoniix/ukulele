@@ -32,9 +32,6 @@ class FilterCommand : Command ("filter", "f") {
 				param.set(value)
 				replyText += "Set ${paramName.lowercase()} to $value\n"
 			} else {
-				// replyText += "Started a lerp of $paramName from ${formatDouble(param.get())} to $value over $lerpTime seconds\n"
-				// param.rampTo(value, lerpTime)
-				// replyText += "Started a $lerpTime second lerp!\n"
 				replyText += "$paramName: ${formatDouble(param.get())} -> $value\n"
 				param.rampTo(value, lerpTime)
 			}
@@ -49,6 +46,9 @@ class FilterCommand : Command ("filter", "f") {
 					val name = matcher.group(1)
 					val value = matcher.group(2).toDouble()
 					when (name) {
+						"rate" -> {
+							setSingleParameter(filterFactory.timescaleRateParam, "Rate", value)
+						}
 						"s", "speed" -> {
 							setSingleParameter(filterFactory.timescaleSpeedParam, "Speed", value)
 						}
@@ -195,12 +195,12 @@ class FilterCommand : Command ("filter", "f") {
 					when (name) {
 						"r", "reset" -> {
 							filterFactory.reset()
-
 							replyText += "Reset filters\n"
 						}
 						"list" ->
 						{
 							replyText += "--- Current Filters ---\n"
+							replyText += "\tRate: ${formatDouble(filterFactory.timescaleRateParam.get())}\n"
 							replyText += "\tSpeed: ${formatDouble(filterFactory.timescaleSpeedParam.get())}\n"
 							replyText += "\tPitch: ${formatDouble(filterFactory.timescalePitchParam.get())}\n"
 							replyText += "\tTremolo: ${formatDouble(filterFactory.tremoloFrequencyParam.get())} ${formatDouble(filterFactory.tremoloDepthParam.get())}\n"
@@ -209,7 +209,7 @@ class FilterCommand : Command ("filter", "f") {
 							replyText += "\tEcho: ${formatDouble(filterFactory.echoDelayParam.get())} ${formatDouble(filterFactory.echoDecayParam.get())}\n"
 							replyText += "\tBass Boost: ${formatDouble(filterFactory.bassBoostParam.get())}\n"
 							replyText += "\tClip: ${formatDouble(filterFactory.clipperThresholdParam.get())}\n"
-							replyText += "\tRotation: ${formatDouble(filterFactory.rotationParam.get())}/${formatDouble(filterFactory.rotationDepthParam.get())}\n"
+							replyText += "\tRotation: ${formatDouble(filterFactory.rotationParam.get())} ${formatDouble(filterFactory.rotationDepthParam.get())}\n"
 						}
 					}
 				}
@@ -227,11 +227,12 @@ class FilterCommand : Command ("filter", "f") {
 	}
 
 	// private val matchPattern: Pattern = Pattern.compile("(s|p|speed|pitch)\\s+([\\d.]+)|trem\\s+([\\d.]+)\\s+([\\d.]+)|(r|reset)")
-	private val matchPattern: Pattern = Pattern.compile("""(s|p|speed|pitch|bb|bassboost|l|lerp|reverbLines)\s+([\d.-]+)|(t|tremolo|v|vibrato|rev|reverb|echo|rot|rotation|c|clip)\s+([\d.-]+)(?:\s+([\d.-]+))?|^(r|reset|list)$""")
+	private val matchPattern: Pattern = Pattern.compile("""(rate|s|p|speed|pitch|bb|bassboost|l|lerp|reverbLines)\s+([\d.-]+)|(t|tremolo|v|vibrato|rev|reverb|echo|rot|rotation|c|clip)\s+([\d.-]+)(?:\s+([\d.-]+))?|^(r|reset|list)$""")
 	//\ns/speed X.XX\np/pitch X.XX\nt/tremolo X.XX (freq) X.XX (depth 0-1)\nbb/bassboost X.XX\nr/reset"
 	override fun HelpContext.provideHelp() {
 		addUsage("[filter]")
 		addDescription("Adjusts the filters on the current track")
+		addUsages("rate <rate>")
 		addUsages("speed", "s <s>")
 		addUsages("pitch", "p <p>")
 		addUsages("tremolo", "t <freq> <depth>")
@@ -240,7 +241,7 @@ class FilterCommand : Command ("filter", "f") {
 		addUsages("reverb", "rev <size> <strength>")
 		addUsages("reverbLines <numLines>")
 		addUsages("bassboost", "bb <amount>")
-		addUsages("rotation", "rot <hz> <depth>")
+		addUsages("rotation", "rot <freq> <depth>")
 		addUsages("clip", "c <amount> <gain>")
 		addUsages("lerp", "l")
 		addUsages("list")
